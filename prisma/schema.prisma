@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  APP_ADMIN
+  ROOM_ADMIN
+  MEMBER
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+}
+
+enum MessageStatus {
+  OPEN
+  RESOLVED
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String
+  email         String    @unique
+  passwordHash  String?
+  role          Role
+  inviteToken   String?   @unique
+  isActive      Boolean   @default(true)
+
+  roomsCreated  Room[]    @relation("RoomAdmin")
+  memberships   RoomMember[]
+  messagesSent  Message[]
+  expensesAdded Expense[]
+  passwordResetTokens PasswordResetToken[]
+  notifications Notification[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Room {
+  id            Int       @id @default(autoincrement())
+  title         String    @unique
+  threshold     Int       @default(1000)
+
+  adminId       Int
+  admin         User      @relation("RoomAdmin", fields: [adminId], references: [id])
+
+  members       RoomMember[]
+  cycles        ExpenseCycle[]
+  expenses      Expense[]
+  messages      Message[]
+
+  isActive      Boolean   @default(true)
+  isBanned      Boolean   @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model RoomMember {
+  id            Int           @id @default(autoincrement())
+  roomId        Int
+  userId        Int
+
+  paymentStatus PaymentStatus @default(UNPAID)
+
+  room          Room          @relation(fields: [roomId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
+
+  joinedAt      DateTime      @default(now())
+
+  @@unique([roomId, userId])
+}
+
+model ExpenseCycle {
+  id            Int       @id @default(autoincrement())
+  roomId        Int
+  totalAmount   Int       @default(0)
+  isClosed      Boolean   @default(false)
+
+  room          Room      @relation(fields: [roomId], references: [id])
+  expenses      Expense[]
+
+  createdAt     DateTime  @default(now())
+  closedAt      DateTime?
+}
+
+model Expense {
+  id            Int       @id @default(autoincrement())
+  roomId        Int
+  cycleId       Int
+
+  itemName      String
+  amount        Int
+  category      String
+
+  addedById     Int
+  addedBy       User      @relation(fields: [addedById], references: [id])
+
+  room          Room      @relation(fields: [roomId], references: [id])
+  cycle         ExpenseCycle @relation(fields: [cycleId], references: [id])
+
+  createdAt     DateTime  @default(now())
+}
+
+model Message {
+  id            Int           @id @default(autoincrement())
+  roomId        Int
+  senderId      Int
+
+  content       String
+  status        MessageStatus @default(OPEN)
+
+  room          Room          @relation(fields: [roomId], references: [id])
+  sender        User          @relation(fields: [senderId], references: [id])
+
+  createdAt     DateTime      @default(now())
+}
+
+model PasswordResetToken {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  token         String    @unique
+  expiresAt     DateTime
+
+  user          User      @relation(fields: [userId], references: [id])
+
+  createdAt     DateTime  @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  isRead    Boolean  @default(false)
+  type      String   @default("INFO") // INFO, WARNING, SUCCESS
+  createdAt DateTime @default(now())
+}
