@@ -64,7 +64,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         {/* Create Room Section */}
-        <div className="mb-12 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-8 transition-colors duration-300">
+        <div className="mb-12 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors duration-300">
           <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Create a New Room</h2>
           <form onSubmit={handleCreateRoom} className="flex flex-col sm:flex-row gap-4">
             <input
