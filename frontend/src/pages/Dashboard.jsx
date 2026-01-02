@@ -42,18 +42,24 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300 relative overflow-hidden">
+      {/* Ambient Background Glows */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[100px]"></div>
+      </div>
+
       {/* Navbar / Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10 transition-colors duration-300">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-sm sticky top-0 z-20 border-b border-gray-100 dark:border-gray-700 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent transform hover:scale-105 transition-transform cursor-pointer">
             Dashboard
           </h1>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             <span className="text-gray-600 dark:text-gray-300 font-medium hidden sm:block">Welcome, {user?.name}</span>
             <button
               onClick={logout}
-              className="px-5 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30 rounded-full transition-colors"
+              className="px-5 py-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30 rounded-xl transition-colors"
             >
               Logout
             </button>
@@ -61,60 +67,101 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
 
-        {/* Create Room Section */}
-        <div className="mb-12 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 md:p-8 transition-colors duration-300">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Create a New Room</h2>
-          <form onSubmit={handleCreateRoom} className="flex flex-col sm:flex-row gap-4">
-            <input
-              type="text"
-              value={newRoomTitle}
-              onChange={(e) => setNewRoomTitle(e.target.value)}
-              placeholder="Ex: Apartment 4B, Goa Trip..."
-              className="flex-1 px-5 py-3 text-lg border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:bg-gray-700 dark:text-white"
-              required
-            />
-            <button type="submit" className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-lg">
-              Create Room
-            </button>
-          </form>
-          {error && <p className="text-red-500 mt-3 font-medium">{error}</p>}
+        {/* Create Room Section - Improved Styling */}
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl opacity-30 group-hover:opacity-100 transition duration-500 blur"></div>
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors duration-300">
+            <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Create a New Room</h2>
+                <p className="text-gray-500 dark:text-gray-400">Start splitting bills instantly. You'll be the Admin.</p>
+              </div>
+
+              <form onSubmit={handleCreateRoom} className="flex-1 w-full md:max-w-xl flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  value={newRoomTitle}
+                  onChange={(e) => setNewRoomTitle(e.target.value)}
+                  placeholder="Ex: Apartment 4B..."
+                  className="flex-1 px-5 py-4 text-base border-2 border-gray-100 dark:border-gray-700 rounded-xl focus:ring-0 focus:border-blue-500 outline-none transition-all dark:bg-gray-700/50 dark:text-white font-medium"
+                  required
+                />
+                <button type="submit" className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transform hover:-translate-y-0.5 transition-all whitespace-nowrap">
+                  + Create
+                </button>
+              </form>
+            </div>
+            {error && <p className="text-red-500 mt-4 font-bold flex items-center gap-2"><span>⚠️</span> {error}</p>}
+          </div>
         </div>
 
         {/* Rooms Grid */}
-        <h2 className="text-xl font-semibold mb-6 text-gray-700 dark:text-gray-300">Your Rooms</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {loading ? (
-            [1, 2, 3].map(i => (
-              <div key={i} className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
-            ))
-          ) : rooms.map(room => (
-            <Link key={room.id} to={`/rooms/${room.id}`} className="group relative bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl border border-gray-100 dark:border-gray-700 transition-all duration-300 flex flex-col justify-between overflow-hidden">
-              <div className="absolute top-0 left-0 w-2 h-full bg-blue-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{room.title}</h3>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Threshold</p>
-                <p className="text-lg font-semibold text-gray-700 dark:text-gray-200">₹{room.threshold.toLocaleString()}</p>
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+            <span className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400 text-xl">🏠</span>
+            Your Rooms
+          </h2>
 
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    {room._count?.members || 0} Members
-                  </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              [1, 2, 3].map(i => (
+                <div key={i} className="h-56 bg-white dark:bg-gray-800 rounded-3xl animate-pulse shadow-sm border border-gray-100 dark:border-gray-700"></div>
+              ))
+            ) : rooms.map(room => (
+              <Link key={room.id} to={`/rooms/${room.id}`} className="group relative bg-white dark:bg-gray-800 rounded-3xl p-1 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <div className="absolute inset-x-0 h-1/2 bg-gradient-to-b from-blue-50/50 dark:from-blue-900/10 to-transparent rounded-t-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                <div className="relative p-6 h-full flex flex-col justify-between z-10 bg-white dark:bg-gray-800 rounded-[1.4rem] border border-gray-100 dark:border-gray-700 group-hover:border-blue-100 dark:group-hover:border-blue-900/50 transition-colors">
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-2xl group-hover:scale-110 transition-transform duration-300">
+                        🏡
+                      </div>
+                      <span className="px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-full text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        Active
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">{room.title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Created by you</p>
+
+                    <div className="mt-6 flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-gray-900 dark:text-white">₹{room.threshold.toLocaleString()}</span>
+                      <span className="text-xs font-semibold text-gray-400 uppercase">Limit</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t border-dashed border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <div className="flex -space-x-2">
+                      {[...Array(Math.min(3, room._count?.members || 1))].map((_, i) => (
+                        <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 border-2 border-white dark:border-gray-800"></div>
+                      ))}
+                      {(room._count?.members || 0) > 3 && (
+                        <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center text-[10px] font-bold text-gray-500">
+                          +{room._count.members - 3}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+                      Manage &rarr;
+                    </span>
+                  </div>
                 </div>
+              </Link>
+            ))}
+
+            {!loading && rooms.length === 0 && (
+              <div className="col-span-full py-16 text-center bg-white/50 dark:bg-gray-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+                <div className="text-6xl mb-4 opacity-50">✨</div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No rooms yet</h3>
+                <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                  Create your first room above to start tracking expenses with your roommates!
+                </p>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-700/50 p-4 flex justify-between items-center group-hover:bg-blue-50 dark:group-hover:bg-gray-700 transition-colors">
-                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">View Details</span>
-                <span className="text-xl text-blue-600 dark:text-blue-400 transform group-hover:translate-x-1 transition-transform">&rarr;</span>
-              </div>
-            </Link>
-          ))}
-          {!loading && rooms.length === 0 && (
-            <div className="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600">
-              <p className="text-gray-500 dark:text-gray-400 text-lg">You haven't joined any rooms yet.</p>
-              <p className="text-gray-400 dark:text-gray-500">Create one above or ask for an invite!</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
