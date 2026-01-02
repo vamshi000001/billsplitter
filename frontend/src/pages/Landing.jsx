@@ -16,7 +16,7 @@ const Landing = () => {
             {/* Typography */}
             <div className="space-y-4 mb-16">
                 <h1 className="text-3xl font-extrabold text-blue-900 tracking-tight">
-                    Welcome To
+                    Welcome To Bill Splitter
                 </h1>
                 <p className="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">
                     Create an account and access thousand of cool stuffs
