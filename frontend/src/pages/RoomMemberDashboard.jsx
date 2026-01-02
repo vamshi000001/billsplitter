@@ -170,9 +170,14 @@ const RoomMemberDashboard = ({ roomId }) => {
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm ${exp.category === 'Food' ? 'bg-orange-50 text-brand-orange' : 'bg-blue-50 text-brand-blue'}`}>
                                             {exp.category === 'Food' ? '🍔' : '💸'}
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-1">{exp.itemName}</h4>
-                                            <p className="text-xs text-gray-400">{new Date(exp.createdAt).toLocaleDateString()}</p>
+                                        <div className="min-w-0">
+                                            <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate">{exp.itemName}</h4>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-[10px] font-bold uppercase tracking-wide text-brand-blue/60 bg-blue-50 px-2 py-0.5 rounded-full">{exp.category}</span>
+                                                <span className="text-[10px] text-gray-400 font-medium">
+                                                    {new Date(exp.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="text-right">

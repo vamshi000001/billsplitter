@@ -5,7 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import StatusModal from '../components/StatusModal';
-import { Bell, Settings, Home, Plus, Users, Wallet } from 'lucide-react';
+import { Bell, Settings, Home, Plus, Users, Wallet, MessageSquare, X, Check } from 'lucide-react';
 
 const RoomAdminDashboard = ({ roomId }) => {
     const { user } = useAuth();
@@ -27,8 +27,11 @@ const RoomAdminDashboard = ({ roomId }) => {
     const [activeTab, setActiveTab] = useState('home'); // home, expense, members
 
     // Modal States
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showMessages, setShowMessages] = useState(false);
     const [expenseForm, setExpenseForm] = useState({ itemName: '', amount: '', category: 'General' });
     const [showAddExpenseModal, setShowAddExpenseModal] = useState(false); // For mobile FAB
+    const [adding, setAdding] = useState(false); // Loading state
     const [targetUserIds, setTargetUserIds] = useState([]);
     const [showReminderModal, setShowReminderModal] = useState(false);
     const [notifyForm, setNotifyForm] = useState({ subject: '', content: '' });
@@ -80,6 +83,8 @@ const RoomAdminDashboard = ({ roomId }) => {
 
     const handleAddExpense = async (e) => {
         e.preventDefault();
+        if (adding) return;
+        setAdding(true);
         try {
             await api.post(`/rooms/${roomId}/expenses`, {
                 ...expenseForm,
@@ -101,6 +106,8 @@ const RoomAdminDashboard = ({ roomId }) => {
                 title: 'Failed to Add',
                 message: 'Could not add expense. Please try again.'
             });
+        } finally {
+            setAdding(false);
         }
     };
 
@@ -134,7 +141,11 @@ const RoomAdminDashboard = ({ roomId }) => {
                         </div>
                     </div>
                     <div className="flex gap-4">
-                        <button className="relative">
+                        <button className="relative" onClick={() => setShowMessages(true)}>
+                            <MessageSquare className="w-6 h-6 text-gray-400" />
+                            {messages.filter(m => m.status === 'OPEN').length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full border-2 border-white">{messages.filter(m => m.status === 'OPEN').length}</span>}
+                        </button>
+                        <button className="relative" onClick={() => setShowNotifications(true)}>
                             <Bell className="w-6 h-6 text-gray-400" />
                             {notifications.length > 0 && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
                         </button>
@@ -228,9 +239,14 @@ const RoomAdminDashboard = ({ roomId }) => {
                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${exp.category === 'Food' ? 'bg-orange-50 text-brand-orange' : 'bg-blue-50 text-brand-blue'}`}>
                                         {exp.category === 'Food' ? '🍔' : '💸'}
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-sm text-gray-900 dark:text-white">{exp.itemName}</h4>
-                                        <p className="text-xs text-brand-blue/50 font-bold uppercase tracking-wide">{exp.category}</p>
+                                    <div className="min-w-0">
+                                        <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate">{exp.itemName}</h4>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[10px] font-bold uppercase tracking-wide text-brand-blue/60 bg-blue-50 px-2 py-0.5 rounded-full">{exp.category}</span>
+                                            <span className="text-[10px] text-gray-400 font-medium">
+                                                {new Date(exp.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 <span className="font-bold text-gray-900 dark:text-white">₹{exp.amount}</span>
@@ -309,7 +325,20 @@ const RoomAdminDashboard = ({ roomId }) => {
 
                             <div className="grid grid-cols-2 gap-4 pt-4">
                                 <button type="button" onClick={() => setShowAddExpenseModal(false)} className="py-4 rounded-xl font-bold text-gray-500 bg-gray-100 dark:bg-gray-700">Cancel</button>
-                                <button type="submit" className="py-4 rounded-xl font-bold text-white bg-brand-blue shadow-lg shadow-brand-blue/30">Save</button>
+                                <button
+                                    type="submit"
+                                    disabled={adding}
+                                    className={`py-4 rounded-xl font-bold text-white shadow-lg shadow-brand-blue/30 flex justify-center items-center gap-2 ${adding ? 'bg-brand-blue/70 cursor-not-allowed' : 'bg-brand-blue'}`}
+                                >
+                                    {adding ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span>Adding...</span>
+                                        </>
+                                    ) : (
+                                        'Save'
+                                    )}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -323,6 +352,52 @@ const RoomAdminDashboard = ({ roomId }) => {
                 title={statusModal.title}
                 message={statusModal.message}
             />
+
+            {/* Messages Drawer */}
+            {showMessages && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-end">
+                    <div className="w-full sm:w-96 bg-white dark:bg-gray-800 h-full p-6 shadow-2xl animate-slide-in-right overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Messages</h3>
+                            <button onClick={() => setShowMessages(false)}><X className="text-gray-400" /></button>
+                        </div>
+                        <div className="space-y-4">
+                            {messages.length === 0 ? <p className="text-gray-400 text-center mt-10">No messages yet.</p> : messages.map(msg => (
+                                <div key={msg.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="font-bold text-sm text-brand-blue dark:text-blue-300">{msg.sender?.name || 'Member'}</span>
+                                        <span className="text-[10px] text-gray-400">{new Date(msg.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">{msg.content}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Notifications Drawer */}
+            {showNotifications && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-end">
+                    <div className="w-full sm:w-96 bg-white dark:bg-gray-800 h-full p-6 shadow-2xl animate-slide-in-right overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Notifications</h3>
+                            <button onClick={() => setShowNotifications(false)}><X className="text-gray-400" /></button>
+                        </div>
+                        <div className="space-y-4">
+                            {notifications.length === 0 ? <p className="text-gray-400 text-center mt-10">No notifications.</p> : notifications.map(notif => (
+                                <div key={notif.id} className="bg-white dark:bg-gray-700 p-4 rounded-xl border border-gray-100 dark:border-gray-600 shadow-sm flex gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-brand-orange mt-2 shrink-0"></div>
+                                    <div>
+                                        <p className="text-sm text-gray-700 dark:text-gray-200">{notif.content}</p>
+                                        <span className="text-[10px] text-gray-400 block mt-1">{new Date(notif.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
