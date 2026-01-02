@@ -7,18 +7,24 @@ export default {
     theme: {
         extend: {
             colors: {
+                brand: {
+                    blue: "#0F4C81", // Deep Blue from shield
+                    orange: "#FF6B35", // Pizza Orange
+                    yellow: "#F7C948", // Cheese Yellow
+                    light: "#F0F4F8", // Light background
+                },
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
                 background: "hsl(var(--background))",
                 foreground: "hsl(var(--foreground))",
                 primary: {
-                    DEFAULT: "hsl(var(--primary))",
-                    foreground: "hsl(var(--primary-foreground))",
+                    DEFAULT: "#0F4C81",
+                    foreground: "#ffffff",
                 },
                 secondary: {
-                    DEFAULT: "hsl(var(--secondary))",
-                    foreground: "hsl(var(--secondary-foreground))",
+                    DEFAULT: "#FF6B35",
+                    foreground: "#ffffff",
                 },
                 destructive: {
                     DEFAULT: "hsl(var(--destructive))",
@@ -29,8 +35,8 @@ export default {
                     foreground: "hsl(var(--muted-foreground))",
                 },
                 accent: {
-                    DEFAULT: "hsl(var(--accent))",
-                    foreground: "hsl(var(--accent-foreground))",
+                    DEFAULT: "#F7C948",
+                    foreground: "#0F4C81",
                 },
                 popover: {
                     DEFAULT: "hsl(var(--popover))",
