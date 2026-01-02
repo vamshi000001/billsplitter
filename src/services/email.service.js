@@ -97,8 +97,7 @@ exports.sendManualEmail = async (to, roomName, subject, content, adminName) => {
 
 exports.sendInviteEmail = async (to, roomName, adminName, inviteToken) => {
     const subject = `You're invited to join ${roomName} on SplitApp`;
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    const link = `${frontendUrl}/accept-invite?token=${inviteToken}`;
+    const link = `http://localhost:5173/accept-invite?token=${inviteToken}`;
 
     const body = `
         <h2>Join Your Roommates! 👋</h2>
@@ -144,7 +143,7 @@ exports.sendWelcomeEmail = async (to, roomName, adminName, email, password) => {
         <p>You can now log in to view expenses and settle up.</p>
         
         <div style="text-align: center;">
-            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" class="button">Login to Dashboard</a>
+            <a href="http://localhost:5173/login" class="button">Login to Dashboard</a>
         </div>
 
         <p>Best Regards,<br><strong>SplitApp Team</strong></p>
