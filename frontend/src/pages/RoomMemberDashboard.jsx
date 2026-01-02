@@ -70,16 +70,16 @@ const RoomMemberDashboard = ({ roomId }) => {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>;
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div></div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24 font-sans text-gray-800 dark:text-gray-100">
+        <div className="min-h-screen bg-brand-light dark:bg-gray-900 pb-24 font-sans text-gray-800 dark:text-gray-100">
 
             {/* Mobile Header */}
             <div className="bg-white dark:bg-gray-800 px-6 pt-12 pb-6 shadow-sm rounded-b-3xl mb-6">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg border-2 border-blue-200">
+                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100">
                             M
                         </div>
                         <div>
@@ -95,9 +95,9 @@ const RoomMemberDashboard = ({ roomId }) => {
                     </div>
                 </div>
 
-                {/* Main Stat Card (Blue/Gradient) */}
+                {/* Main Stat Card (Brand Orange/Gradient) */}
                 {cycleSummary && (
-                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-[2rem] p-6 shadow-xl shadow-blue-200 relative overflow-hidden">
+                    <div className="bg-gradient-to-r from-brand-orange to-orange-400 text-white rounded-[2rem] p-6 shadow-xl shadow-brand-orange/20 relative overflow-hidden">
                         <div className="relative z-10">
                             <p className="opacity-80 text-sm font-medium mb-1">Your Contribution</p>
                             <h2 className="text-4xl font-bold mb-6">₹{cycleSummary.userShare?.toLocaleString() || '0'}</h2>
@@ -140,7 +140,7 @@ const RoomMemberDashboard = ({ roomId }) => {
                                         dataKey="value"
                                     >
                                         {Object.keys(categoryAnalytics).map((entry, index) => {
-                                            const colors = ['#F59E0B', '#8B5CF6', '#3B82F6', '#EC4899', '#6B7280'];
+                                            const colors = ['#F59E0B', '#0F4C81', '#FF6B35', '#F7C948', '#6B7280'];
                                             return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} stroke="none" />;
                                         })}
                                     </Pie>
@@ -167,7 +167,7 @@ const RoomMemberDashboard = ({ roomId }) => {
                             expenses.map(exp => (
                                 <div key={exp.id} className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center transform transition-transform active:scale-98">
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm ${exp.category === 'Food' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500'}`}>
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm ${exp.category === 'Food' ? 'bg-orange-50 text-brand-orange' : 'bg-blue-50 text-brand-blue'}`}>
                                             {exp.category === 'Food' ? '🍔' : '💸'}
                                         </div>
                                         <div>
@@ -188,19 +188,19 @@ const RoomMemberDashboard = ({ roomId }) => {
             {/* Mobile Bottom Nav */}
             <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 pb-safe pt-2 px-8 safe-area-bottom z-50">
                 <div className="flex justify-between items-center py-3">
-                    <button onClick={() => { setActiveTab('home'); }} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <button onClick={() => { setActiveTab('home'); }} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-brand-blue' : 'text-gray-400'}`}>
                         <Home className="w-6 h-6" fill={activeTab === 'home' ? "currentColor" : "none"} />
                         <span className="text-[10px] font-bold">Home</span>
                     </button>
 
                     <button
                         onClick={() => { setActiveTab('message'); setShowMessageModal(true); }}
-                        className="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/40 -mt-8 border-4 border-gray-50 dark:border-gray-900"
+                        className="w-14 h-14 bg-gradient-to-r from-brand-orange to-orange-400 rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-orange/40 -mt-8 border-4 border-gray-50 dark:border-gray-900"
                     >
                         <MessageSquare className="w-6 h-6" />
                     </button>
 
-                    <button onClick={() => { setActiveTab('settings'); navigate('/settings'); }} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <button onClick={() => { setActiveTab('settings'); navigate('/settings'); }} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-brand-blue' : 'text-gray-400'}`}>
                         <Settings className="w-6 h-6" />
                         <span className="text-[10px] font-bold">Settings</span>
                     </button>
@@ -218,13 +218,13 @@ const RoomMemberDashboard = ({ roomId }) => {
                             <textarea
                                 value={messageContent}
                                 onChange={e => setMessageContent(e.target.value)}
-                                className="w-full bg-gray-50 dark:bg-gray-700 p-4 rounded-xl outline-none font-medium h-32 resize-none"
+                                className="w-full bg-brand-light dark:bg-gray-700 p-4 rounded-xl outline-none font-bold h-32 resize-none"
                                 placeholder="Type your message..."
                             ></textarea>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <button onClick={() => setShowMessageModal(false)} className="py-4 rounded-xl font-bold text-gray-500 bg-gray-100 dark:bg-gray-700">Cancel</button>
-                                <button onClick={handleSendMessage} className="py-4 rounded-xl font-bold text-white bg-blue-600 shadow-lg shadow-blue-500/30">Send</button>
+                                <button onClick={handleSendMessage} className="py-4 rounded-xl font-bold text-white bg-brand-blue shadow-lg shadow-brand-blue/30">Send</button>
                             </div>
                         </div>
                     </div>

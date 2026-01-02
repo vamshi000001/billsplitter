@@ -5,7 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import StatusModal from '../components/StatusModal';
-import { Bell, Settings, Home, Plus, Users, Wallet } from 'lucide-react'; // App-like icons
+import { Bell, Settings, Home, Plus, Users, Wallet } from 'lucide-react';
 
 const RoomAdminDashboard = ({ roomId }) => {
     const { user } = useAuth();
@@ -114,18 +114,18 @@ const RoomAdminDashboard = ({ roomId }) => {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div></div>;
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div></div>;
 
     const unreadMessagesCount = messages.filter(m => m.status === 'OPEN').length;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24 font-sans text-gray-800 dark:text-gray-100">
+        <div className="min-h-screen bg-brand-light dark:bg-gray-900 pb-24 font-sans text-gray-800 dark:text-gray-100">
 
             {/* Top Header Section (Mobile App Style) */}
             <div className="bg-white dark:bg-gray-800 px-6 pt-12 pb-6 shadow-sm rounded-b-3xl mb-6">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg border-2 border-purple-200">
+                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100">
                             {user?.name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -141,9 +141,9 @@ const RoomAdminDashboard = ({ roomId }) => {
                     </div>
                 </div>
 
-                {/* Main Stat Card (Purple) */}
+                {/* Main Stat Card (Brand Blue) */}
                 {cycleSummary && (
-                    <div className="bg-[#6C63FF] text-white rounded-[2rem] p-6 shadow-xl shadow-purple-200 relative overflow-hidden">
+                    <div className="bg-brand-blue text-white rounded-[2rem] p-6 shadow-xl shadow-brand-blue/20 relative overflow-hidden">
                         <div className="relative z-10">
                             <p className="opacity-80 text-sm font-medium mb-1">Total Spending (This Cycle)</p>
                             <h2 className="text-4xl font-bold mb-6">₹{cycleSummary.total.toLocaleString()}</h2>
@@ -176,7 +176,7 @@ const RoomAdminDashboard = ({ roomId }) => {
                         onClick={() => setShowAddExpenseModal(true)}
                         className="flex flex-col items-center gap-2 min-w-[80px]"
                     >
-                        <div className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center text-purple-600 shadow-sm border border-gray-100">
+                        <div className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center text-brand-blue shadow-sm border border-gray-100 hover:bg-blue-50 transition-colors">
                             <Plus className="w-6 h-6" />
                         </div>
                         <span className="text-xs font-medium text-gray-500">Add</span>
@@ -185,7 +185,7 @@ const RoomAdminDashboard = ({ roomId }) => {
                         onClick={handleCloseCycle}
                         className="flex flex-col items-center gap-2 min-w-[80px]"
                     >
-                        <div className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center text-red-500 shadow-sm border border-gray-100">
+                        <div className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center text-brand-orange shadow-sm border border-gray-100 hover:bg-orange-50 transition-colors">
                             <Wallet className="w-6 h-6" />
                         </div>
                         <span className="text-xs font-medium text-gray-500">Close</span>
@@ -194,7 +194,7 @@ const RoomAdminDashboard = ({ roomId }) => {
                         onClick={() => navigate(`/rooms/${roomId}/add-member`)}
                         className="flex flex-col items-center gap-2 min-w-[80px]"
                     >
-                        <div className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm border border-gray-100">
+                        <div className="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center text-brand-yellow shadow-sm border border-gray-100 hover:bg-yellow-50 transition-colors">
                             <Users className="w-6 h-6" />
                         </div>
                         <span className="text-xs font-medium text-gray-500">Invite</span>
@@ -211,7 +211,7 @@ const RoomAdminDashboard = ({ roomId }) => {
                             <BarChart data={monthlyAnalytics}>
                                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9CA3AF' }} dy={10} />
                                 <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                                <Bar dataKey="total" fill="#6C63FF" radius={[4, 4, 4, 4]} barSize={20} />
+                                <Bar dataKey="total" fill="#0F4C81" radius={[4, 4, 4, 4]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -225,12 +225,12 @@ const RoomAdminDashboard = ({ roomId }) => {
                         {expenses.slice(0, 5).map(exp => (
                             <div key={exp.id} className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${exp.category === 'Food' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500'}`}>
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${exp.category === 'Food' ? 'bg-orange-50 text-brand-orange' : 'bg-blue-50 text-brand-blue'}`}>
                                         {exp.category === 'Food' ? '🍔' : '💸'}
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-sm text-gray-900 dark:text-white">{exp.itemName}</h4>
-                                        <p className="text-xs text-gray-400 capitalize">{exp.category}</p>
+                                        <p className="text-xs text-brand-blue/50 font-bold uppercase tracking-wide">{exp.category}</p>
                                     </div>
                                 </div>
                                 <span className="font-bold text-gray-900 dark:text-white">₹{exp.amount}</span>
@@ -243,19 +243,19 @@ const RoomAdminDashboard = ({ roomId }) => {
             {/* Mobile Bottom Navigation (Fixed) */}
             <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 pb-safe pt-2 px-6 safe-area-bottom z-50">
                 <div className="flex justify-between items-center py-3">
-                    <button onClick={() => { setActiveTab('home'); setShowAddExpenseModal(false); }} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-[#6C63FF]' : 'text-gray-400'}`}>
+                    <button onClick={() => { setActiveTab('home'); setShowAddExpenseModal(false); }} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-brand-blue' : 'text-gray-400'}`}>
                         <Home className="w-6 h-6" fill={activeTab === 'home' ? "currentColor" : "none"} />
                     </button>
 
                     {/* Floating Add Button in Center */}
                     <button
                         onClick={() => { setActiveTab('add'); setShowAddExpenseModal(true); }}
-                        className="w-14 h-14 bg-[#6C63FF] rounded-full flex items-center justify-center text-white shadow-lg shadow-purple-500/40 -mt-8 border-4 border-gray-50 dark:border-gray-900"
+                        className="w-14 h-14 bg-brand-blue rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-blue/40 -mt-8 border-4 border-gray-50 dark:border-gray-900"
                     >
                         <Plus className="w-7 h-7" />
                     </button>
 
-                    <button onClick={() => { setActiveTab('settings'); navigate('/settings'); }} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-[#6C63FF]' : 'text-gray-400'}`}>
+                    <button onClick={() => { setActiveTab('settings'); navigate('/settings'); }} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-brand-blue' : 'text-gray-400'}`}>
                         <Settings className="w-6 h-6" />
                     </button>
                 </div>
@@ -291,15 +291,15 @@ const RoomAdminDashboard = ({ roomId }) => {
                                     placeholder="What is this for?"
                                     value={expenseForm.itemName}
                                     onChange={e => setExpenseForm({ ...expenseForm, itemName: e.target.value })}
-                                    className="w-full bg-gray-50 dark:bg-gray-700 p-4 rounded-xl outline-none font-medium mb-4"
+                                    className="w-full bg-brand-light dark:bg-gray-700 p-4 rounded-xl outline-none font-bold mb-4"
                                 />
-                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                                     {['General', 'Food', 'Transport', 'Rent', 'Utils'].map(cat => (
                                         <button
                                             key={cat}
                                             type="button"
                                             onClick={() => setExpenseForm({ ...expenseForm, category: cat })}
-                                            className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${expenseForm.category === cat ? 'bg-[#6C63FF] text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}
+                                            className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${expenseForm.category === cat ? 'bg-brand-blue text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}
                                         >
                                             {cat}
                                         </button>
@@ -309,7 +309,7 @@ const RoomAdminDashboard = ({ roomId }) => {
 
                             <div className="grid grid-cols-2 gap-4 pt-4">
                                 <button type="button" onClick={() => setShowAddExpenseModal(false)} className="py-4 rounded-xl font-bold text-gray-500 bg-gray-100 dark:bg-gray-700">Cancel</button>
-                                <button type="submit" className="py-4 rounded-xl font-bold text-white bg-[#6C63FF] shadow-lg shadow-purple-500/30">Save</button>
+                                <button type="submit" className="py-4 rounded-xl font-bold text-white bg-brand-blue shadow-lg shadow-brand-blue/30">Save</button>
                             </div>
                         </form>
                     </div>
