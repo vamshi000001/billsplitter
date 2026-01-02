@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Settings, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Loader2, Settings, Facebook, Instagram, Linkedin } from 'lucide-react';
 
 const RoommateLogin = () => {
     const [email, setEmail] = useState('');
@@ -87,7 +87,6 @@ const RoommateLogin = () => {
                     <Link to="/login" className="text-blue-900 font-bold hover:underline">Admin Login</Link>
                 </div>
 
-                {/* Optional: Socials for roommate? Keeping consistent */}
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-100"></div>
@@ -98,15 +97,15 @@ const RoommateLogin = () => {
                 </div>
 
                 <div className="flex justify-center gap-4">
-                    <button className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                    <a href="#" className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
                         <Facebook className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full bg-sky-50 text-sky-500 hover:bg-sky-100 transition-colors">
-                        <Twitter className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors">
+                    </a>
+                    <a href="https://www.instagram.com/_vamshi_yadav__001/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 transition-colors">
+                        <Instagram className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.linkedin.com/in/vamshi-potharaveni-120175271/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors">
                         <Linkedin className="w-5 h-5" />
-                    </button>
+                    </a>
                 </div>
 
                 <div className="pt-4">

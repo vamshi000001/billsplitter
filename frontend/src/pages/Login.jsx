@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Settings, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Settings, Facebook, Instagram, Linkedin } from 'lucide-react';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -95,15 +95,15 @@ const Login = () => {
                 </div>
 
                 <div className="flex justify-center gap-4">
-                    <button className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                    <a href="#" className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
                         <Facebook className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full bg-sky-50 text-sky-500 hover:bg-sky-100 transition-colors">
-                        <Twitter className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors">
+                    </a>
+                    <a href="https://www.instagram.com/_vamshi_yadav__001/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 transition-colors">
+                        <Instagram className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.linkedin.com/in/vamshi-potharaveni-120175271/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors">
                         <Linkedin className="w-5 h-5" />
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>

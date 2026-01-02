@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Settings, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Settings, Facebook, Instagram, Linkedin } from 'lucide-react';
 
 const Register = () => {
     const [roomName, setRoomName] = useState('');
@@ -34,8 +34,8 @@ const Register = () => {
 
             {/* Header */}
             <div className="mb-8 space-y-2">
-                <h2 className="text-2xl font-bold text-blue-900">Sign Up Now</h2>
-                <p className="text-gray-400 text-xs">Please fill the details and create account</p>
+                <h2 className="text-2xl font-bold text-blue-900">Create Room</h2>
+                <p className="text-gray-400 text-xs">Please fill the details and create room</p>
             </div>
 
             {error && (
@@ -87,7 +87,7 @@ const Register = () => {
                     type="submit"
                     className="w-full py-4 mt-2 bg-blue-900 text-white font-bold rounded-xl shadow-lg hover:bg-blue-800 transition-all text-sm"
                 >
-                    Sign Up
+                    Create Room
                 </button>
             </form>
 
@@ -108,15 +108,15 @@ const Register = () => {
                 </div>
 
                 <div className="flex justify-center gap-4">
-                    <button className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                    <a href="#" className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
                         <Facebook className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full bg-sky-50 text-sky-500 hover:bg-sky-100 transition-colors">
-                        <Twitter className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors">
+                    </a>
+                    <a href="https://www.instagram.com/_vamshi_yadav__001/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 transition-colors">
+                        <Instagram className="w-5 h-5" />
+                    </a>
+                    <a href="https://www.linkedin.com/in/vamshi-potharaveni-120175271/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-blue-50 text-blue-800 hover:bg-blue-100 transition-colors">
                         <Linkedin className="w-5 h-5" />
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
