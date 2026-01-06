@@ -158,55 +158,134 @@ const RoomAdminDashboard = ({ roomId }) => {
     return (
         <div className="min-h-screen bg-brand-light dark:bg-gray-900 pb-24 font-sans text-gray-800 dark:text-gray-100">
 
-            {/* Top Header Section (Mobile App Style) */}
-            <div className="bg-white dark:bg-gray-800 px-6 pt-12 pb-6 shadow-sm rounded-b-3xl mb-6">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100">
-                            {user?.name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Welcome back,</p>
-                            <h1 className="text-xl font-bold text-gray-900 dark:text-white capitalize">{user?.name}</h1>
-                        </div>
-                    </div>
-                    <div className="flex gap-4">
-                        <button className="relative" onClick={() => setShowMessages(true)}>
-                            <MessageSquare className="w-6 h-6 text-gray-400" />
-                            {messages.filter(m => m.status === 'OPEN').length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full border-2 border-white">{messages.filter(m => m.status === 'OPEN').length}</span>}
-                        </button>
-                        <button className="relative" onClick={() => setShowNotifications(true)}>
-                            <Bell className="w-6 h-6 text-gray-400" />
-                            {notifications.length > 0 && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Main Stat Card (Brand Blue) */}
-                {cycleSummary && (
-                    <div className="bg-brand-blue text-white rounded-[2rem] p-6 shadow-xl shadow-brand-blue/20 relative overflow-hidden">
-                        <div className="relative z-10">
-                            <p className="opacity-80 text-sm font-medium mb-1">Total Spending (This Cycle)</p>
-                            <h2 className="text-4xl font-bold mb-6">₹{cycleSummary.total.toLocaleString()}</h2>
-
-                            <div className="flex justify-between items-end">
-                                <div>
-                                    <p className="text-xs opacity-70 mb-1">Your Share</p>
-                                    <p className="font-semibold">₹{cycleSummary.userShare?.toLocaleString() || '0'}</p>
+            {activeTab === 'home' && (
+                <div className="animate-fade-in-down">
+                    {/* Top Header Section (Mobile App Style) */}
+                    <div className="bg-white dark:bg-gray-800 px-6 pt-12 pb-6 shadow-sm rounded-b-3xl mb-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100">
+                                    {user?.name?.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="flex gap-2">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${cycleSummary.unpaid > 0 ? 'bg-white/20 text-white' : 'bg-green-400 text-green-900'}`}>
-                                        {cycleSummary.unpaid > 0 ? 'Active' : 'Settled'}
-                                    </span>
+                                <div>
+                                    <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Welcome back,</p>
+                                    <h1 className="text-xl font-bold text-gray-900 dark:text-white capitalize">{user?.name}</h1>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <button className="relative" onClick={() => setShowMessages(true)}>
+                                    <MessageSquare className="w-6 h-6 text-gray-400" />
+                                    {messages.filter(m => m.status === 'OPEN').length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full border-2 border-white">{messages.filter(m => m.status === 'OPEN').length}</span>}
+                                </button>
+                                <button className="relative" onClick={() => setShowNotifications(true)}>
+                                    <Bell className="w-6 h-6 text-gray-400" />
+                                    {notifications.length > 0 && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Main Stat Card (Brand Blue) */}
+                        {cycleSummary && (
+                            <div className="bg-brand-blue text-white rounded-[2rem] p-6 shadow-xl shadow-brand-blue/20 relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <p className="opacity-80 text-sm font-medium mb-1">Total Spending (This Cycle)</p>
+                                    <h2 className="text-4xl font-bold mb-6">₹{cycleSummary.total.toLocaleString()}</h2>
+
+                                    <div className="flex justify-between items-end">
+                                        <div>
+                                            <p className="text-xs opacity-70 mb-1">Your Share</p>
+                                            <p className="font-semibold">₹{cycleSummary.userShare?.toLocaleString() || '0'}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${cycleSummary.unpaid > 0 ? 'bg-white/20 text-white' : 'bg-green-400 text-green-900'}`}>
+                                                {cycleSummary.unpaid > 0 ? 'Active' : 'Settled'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Decorative Circles */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="px-6 space-y-6 pb-24">
+                        {/* Analytics Section */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Category Pie Chart */}
+                            <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 className="font-bold text-gray-900 dark:text-white mb-4">Spending by Category</h3>
+                                <div className="h-48 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={Object.entries(categoryAnalytics).map(([name, value]) => ({ name, value }))}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={40}
+                                                outerRadius={60}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {Object.entries(categoryAnalytics).map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'][index % 5]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Monthly Bar Chart */}
+                            <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                                <h3 className="font-bold text-gray-900 dark:text-white mb-4">Monthly Trends</h3>
+                                <div className="h-48 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={monthlyAnalytics}>
+                                            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                                            <Tooltip cursor={{ fill: 'transparent' }} />
+                                            <Bar dataKey="total" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>
-                        {/* Decorative Circles */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+
+                        {/* Recent Expenses List */}
+                        <div>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-bold text-gray-900 dark:text-white text-lg">Recent Expenses</h3>
+                                <button className="text-brand-blue text-xs font-bold hover:underline">View All</button>
+                            </div>
+                            <div className="space-y-3">
+                                {expenses.length === 0 ? (
+                                    <p className="text-gray-400 text-sm text-center py-4">No expenses recorded yet.</p>
+                                ) : (
+                                    expenses.slice(0, 5).map(exp => (
+                                        <div key={exp.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-50 dark:border-gray-700 flex justify-between items-center">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-700 flex items-center justify-center text-xl">
+                                                    {exp.category === 'Food' ? '🍕' :
+                                                        exp.category === 'Transport' ? '🚕' :
+                                                            exp.category === 'Rent' ? '🏠' :
+                                                                exp.category === 'Utils' ? '💡' : '🛍️'}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-gray-900 dark:text-white text-sm">{exp.itemName}</p>
+                                                    <p className="text-xs text-gray-400">{exp.addedBy?.name} • {new Date(exp.createdAt).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                            <span className="font-bold text-gray-900 dark:text-white">₹{exp.amount}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     </div>
-                )}
-            </div>
+                </div>
             )}
 
             {/* Members Tab Content */}
