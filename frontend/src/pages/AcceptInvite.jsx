@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
+import { Eye, EyeOff } from 'lucide-react';
 // import { useAuth } from '../context/AuthContext';
 
 const AcceptInvite = () => {
@@ -10,7 +11,9 @@ const AcceptInvite = () => {
     // const { } = useAuth(); // Unused
 
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [name, setName] = useState(''); // Allow editing name
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -92,27 +95,41 @@ const AcceptInvite = () => {
                             placeholder="e.g. John Doe"
                         />
                     </div>
-                    <div>
+                    <div className="relative">
                         <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1 mb-1">New Password</label>
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white font-bold transition-all placeholder:font-normal placeholder:text-gray-400"
+                            className="w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white font-bold transition-all placeholder:font-normal placeholder:text-gray-400 pr-12"
                             placeholder="••••••••"
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-[34px] text-gray-400 hover:text-brand-blue transition-colors"
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                     </div>
-                    <div>
+                    <div className="relative">
                         <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1 mb-1">Confirm Password</label>
                         <input
-                            type="password"
+                            type={showConfirmPassword ? "text" : "password"}
                             required
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white font-bold transition-all placeholder:font-normal placeholder:text-gray-400"
+                            className="w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white font-bold transition-all placeholder:font-normal placeholder:text-gray-400 pr-12"
                             placeholder="••••••••"
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-4 top-[34px] text-gray-400 hover:text-brand-blue transition-colors"
+                        >
+                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                     </div>
 
                     <button
