@@ -110,21 +110,21 @@ const Settings = () => {
                                 <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6">Edit Profile</h2>
                                 <form onSubmit={handleProfileUpdate} className="space-y-6 max-w-md">
                                     <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-wide mb-2">Display Name</label>
+                                        <label className="block text-xs font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">Display Name</label>
                                         <input
                                             type="text"
                                             value={profileForm.name}
                                             onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white font-bold"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-wide mb-2">Email Address</label>
+                                        <label className="block text-xs font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">Email Address</label>
                                         <input
                                             type="email"
                                             value={profileForm.email}
                                             onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white font-bold"
                                         />
                                     </div>
                                     <div className="pt-4">

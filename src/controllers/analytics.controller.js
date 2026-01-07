@@ -6,10 +6,12 @@ exports.getCategorySummary = async (req, res, next) => {
         const userId = req.user.userId;
 
         // Access check
-        const member = await prisma.roomMember.findUnique({
-            where: { roomId_userId: { roomId: parseInt(roomId), userId: parseInt(userId) } }
-        });
-        const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) } });
+        const [member, room] = await Promise.all([
+            prisma.roomMember.findUnique({
+                where: { roomId_userId: { roomId: parseInt(roomId), userId: parseInt(userId) } }
+            }),
+            prisma.room.findUnique({ where: { id: parseInt(roomId) } })
+        ]);
 
         if (!room) return res.status(404).json({ message: "Room not found" });
         if (!member && room.adminId !== userId && req.user.role !== "APP_ADMIN") {
@@ -44,10 +46,12 @@ exports.getCycleSummary = async (req, res, next) => {
         const userId = req.user.userId;
 
         // Access check
-        const member = await prisma.roomMember.findUnique({
-            where: { roomId_userId: { roomId: parseInt(roomId), userId: parseInt(userId) } }
-        });
-        const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) } });
+        const [member, room] = await Promise.all([
+            prisma.roomMember.findUnique({
+                where: { roomId_userId: { roomId: parseInt(roomId), userId: parseInt(userId) } }
+            }),
+            prisma.room.findUnique({ where: { id: parseInt(roomId) } })
+        ]);
 
         if (!room) return res.status(404).json({ message: "Room not found" });
         if (!member && room.adminId !== userId && req.user.role !== "APP_ADMIN") {
@@ -65,9 +69,11 @@ exports.getCycleSummary = async (req, res, next) => {
 
         const total = activeCycle ? activeCycle.totalAmount : 0; // If no active cycle, 0? Or fetch total active?
 
-        const membersCount = await prisma.roomMember.count({ where: { roomId: parseInt(roomId) } });
-        const paidCount = await prisma.roomMember.count({ where: { roomId: parseInt(roomId), paymentStatus: "PAID" } });
-        const unpaidCount = await prisma.roomMember.count({ where: { roomId: parseInt(roomId), paymentStatus: "UNPAID" } });
+        const [membersCount, paidCount, unpaidCount] = await Promise.all([
+            prisma.roomMember.count({ where: { roomId: parseInt(roomId) } }),
+            prisma.roomMember.count({ where: { roomId: parseInt(roomId), paymentStatus: "PAID" } }),
+            prisma.roomMember.count({ where: { roomId: parseInt(roomId), paymentStatus: "UNPAID" } })
+        ]);
 
         return res.status(200).json({
             total,
@@ -88,37 +94,35 @@ exports.getMonthlyAnalytics = async (req, res, next) => {
         const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) } });
         if (!room) return res.status(404).json({ message: "Room not found" });
 
+        // Generate last 3 months keys
+        const last3Months = [];
+        for (let i = 2; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            last3Months.push(d.toLocaleString('default', { month: 'short', year: 'numeric' }));
+        }
+
         // Fetch all expenses
         const expenses = await prisma.expense.findMany({
             where: { roomId: parseInt(roomId) },
             select: { amount: true, createdAt: true }
         });
 
-        // Group by Month-Year (e.g., "Dec 2024")
+        // Group actual data
         const monthlyData = {};
         expenses.forEach(exp => {
-            const date = new Date(exp.createdAt);
-            const key = date.toLocaleString('default', { month: 'short', year: 'numeric' }); // "Dec 2024"
+            const key = new Date(exp.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' });
             if (!monthlyData[key]) monthlyData[key] = 0;
             monthlyData[key] += exp.amount;
         });
 
-        // Convert to array and sort cronologically 
-        // Note: Simple string sort won't work perfectly for "Dec 2024" vs "Jan 2025".
-        // Better to use a sortable key or sort by date object.
-
-        // Let's create an array of objects
-        const chartData = Object.keys(monthlyData).map(key => ({
-            month: key,
-            total: monthlyData[key]
+        // Map to last 3 months (Fill 0 if missing)
+        const chartData = last3Months.map(month => ({
+            month,
+            total: monthlyData[month] || 0
         }));
 
-        // Sort by parsing the date string
-        chartData.sort((a, b) => new Date(a.month) - new Date(b.month));
-
-        // Return last 3 months for clear chart
-        // Limit to 3 items
-        return res.status(200).json(chartData.slice(-3));
+        return res.status(200).json(chartData);
 
     } catch (err) {
         next(err);

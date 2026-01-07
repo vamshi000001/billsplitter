@@ -2,15 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Bell, Settings, Home, MessageSquare, Plus } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis } from 'recharts';
+import { Bell, Settings, Home, MessageSquare, Plus, X } from 'lucide-react';
 
 const RoomMemberDashboard = ({ roomId }) => {
     const navigate = useNavigate();
 
     // State
     const [expenses, setExpenses] = useState([]);
-    const [members, setMembers] = useState([]);
+
     const [roomTitle, setRoomTitle] = useState('');
     const [cycleSummary, setCycleSummary] = useState(null);
     const [categoryAnalytics, setCategoryAnalytics] = useState({});
@@ -20,8 +20,10 @@ const RoomMemberDashboard = ({ roomId }) => {
 
     // UI/Nav State
     const [activeTab, setActiveTab] = useState('home');
+    const [showNotifications, setShowNotifications] = useState(false);
     const [showMessageModal, setShowMessageModal] = useState(false);
     const [messageContent, setMessageContent] = useState('');
+    const [sending, setSending] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -33,7 +35,7 @@ const RoomMemberDashboard = ({ roomId }) => {
                 api.get(`/rooms/${roomId}/analytics/monthly`)
             ]);
 
-            setMembers(roomRes.data.members || []);
+
             setRoomTitle(roomRes.data.title);
             setExpenses(expRes.data);
             setCycleSummary(sumRes.data);
@@ -60,6 +62,8 @@ const RoomMemberDashboard = ({ roomId }) => {
     }, [fetchData]);
 
     const handleSendMessage = async () => {
+        if (!messageContent.trim()) return;
+        setSending(true);
         try {
             await api.post(`/rooms/${roomId}/messages`, { content: messageContent });
             setMessageContent('');
@@ -67,6 +71,8 @@ const RoomMemberDashboard = ({ roomId }) => {
             setShowMessageModal(false);
         } catch {
             toast.error('Failed to send message');
+        } finally {
+            setSending(false);
         }
     };
 
@@ -88,7 +94,7 @@ const RoomMemberDashboard = ({ roomId }) => {
                         </div>
                     </div>
                     <div className="flex gap-4">
-                        <button className="relative">
+                        <button className="relative" onClick={() => setShowNotifications(true)}>
                             <Bell className="w-6 h-6 text-gray-400" />
                             {notifications.length > 0 && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
                         </button>
@@ -154,6 +160,20 @@ const RoomMemberDashboard = ({ roomId }) => {
                                 <span className="text-xs mt-2">No data yet</span>
                             </div>
                         )}
+                    </div>
+                </div>
+
+                {/* Monthly Bar Chart */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 min-h-[250px] relative">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-4">Monthly Trends</h3>
+                    <div className="h-48 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={monthlyAnalytics}>
+                                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }} />
+                                <Bar dataKey="total" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
 
@@ -223,18 +243,49 @@ const RoomMemberDashboard = ({ roomId }) => {
                             <textarea
                                 value={messageContent}
                                 onChange={e => setMessageContent(e.target.value)}
-                                className="w-full bg-brand-light dark:bg-gray-700 p-4 rounded-xl outline-none font-bold h-32 resize-none"
+                                className="w-full bg-brand-light dark:bg-gray-700 p-4 rounded-xl outline-none font-bold h-32 resize-none text-gray-900 dark:text-white"
                                 placeholder="Type your message..."
                             ></textarea>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <button onClick={() => setShowMessageModal(false)} className="py-4 rounded-xl font-bold text-gray-500 bg-gray-100 dark:bg-gray-700">Cancel</button>
-                                <button onClick={handleSendMessage} className="py-4 rounded-xl font-bold text-white bg-brand-blue shadow-lg shadow-brand-blue/30">Send</button>
+                                <button
+                                    onClick={handleSendMessage}
+                                    disabled={sending}
+                                    className={`py-4 rounded-xl font-bold text-white shadow-lg shadow-brand-blue/30 ${sending ? 'bg-brand-blue/70 cursor-not-allowed' : 'bg-brand-blue'}`}
+                                >
+                                    {sending ? 'Sending...' : 'Send'}
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Notifications Drawer */}
+            {
+                showNotifications && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-end">
+                        <div className="w-full sm:w-96 bg-white dark:bg-gray-800 h-full p-6 shadow-2xl animate-slide-in-right overflow-y-auto">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Notifications</h3>
+                                <button onClick={() => setShowNotifications(false)}><X className="text-gray-400" /> <span className="sr-only">Close</span></button>
+                            </div>
+                            <div className="space-y-4">
+                                {notifications.length === 0 ? <p className="text-gray-400 text-center mt-10">No notifications.</p> : notifications.map(notif => (
+                                    <div key={notif.id} className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800/30 shadow-sm flex gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 animate-pulse"></div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{notif.content}</p>
+                                            <span className="text-[10px] text-red-400 block mt-1">{new Date(notif.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
 
         </div>
     );

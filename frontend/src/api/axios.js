@@ -20,11 +20,18 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        // Only redirect if 401 AND it's not a login/register attempt
         if (error.response && error.response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('loginType');
-            window.location.href = '/login'; // Force redirect
+            const isAuthRequest = error.config.url.includes('/auth/login') ||
+                error.config.url.includes('/auth/register') ||
+                error.config.url.includes('/auth/roommate-login');
+
+            if (!isAuthRequest) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('loginType');
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

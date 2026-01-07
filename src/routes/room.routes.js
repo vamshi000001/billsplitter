@@ -14,6 +14,9 @@ router.get("/my", authMiddleware, roomController.getUserRooms);
 // Get Room Details - Member or Admin
 router.get("/:roomId", authMiddleware, roomController.getRoomDetails);
 
+// Update Room - Room Admin only
+router.patch("/:roomId", authMiddleware, roomController.updateRoom);
+
 // Get All Rooms - App Admin only
 router.get("/", authMiddleware, roleGuard(["APP_ADMIN"]), roomController.getAllRooms);
 

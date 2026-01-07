@@ -16,12 +16,12 @@ const RoomAdminDashboard = ({ roomId }) => {
     const [members, setMembers] = useState([]);
     const [messages, setMessages] = useState([]);
     const [notifications, setNotifications] = useState([]);
-    const [roomTitle, setRoomTitle] = useState('');
+
     const [cycleSummary, setCycleSummary] = useState(null);
     const [categoryAnalytics, setCategoryAnalytics] = useState({});
     const [monthlyAnalytics, setMonthlyAnalytics] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [adminId, setAdminId] = useState(null);
+
 
     // Mobile Navigation State
     const [activeTab, setActiveTab] = useState('home'); // home, expense, members
@@ -32,8 +32,7 @@ const RoomAdminDashboard = ({ roomId }) => {
     const [expenseForm, setExpenseForm] = useState({ itemName: '', amount: '', category: 'General' });
     const [showAddExpenseModal, setShowAddExpenseModal] = useState(false); // For mobile FAB
     const [adding, setAdding] = useState(false); // Loading state
-    const [targetUserIds, setTargetUserIds] = useState([]);
-    const [showReminderModal, setShowReminderModal] = useState(false);
+
     const [notifyForm, setNotifyForm] = useState({ subject: '', content: '' });
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
@@ -58,8 +57,8 @@ const RoomAdminDashboard = ({ roomId }) => {
             ]);
 
             setMembers(roomRes.data.members || []);
-            setRoomTitle(roomRes.data.title);
-            setAdminId(roomRes.data.adminId);
+
+
             setExpenses(expRes.data);
             setCycleSummary(sumRes.data);
             setMessages(msgRes.data);
@@ -175,7 +174,7 @@ const RoomAdminDashboard = ({ roomId }) => {
                             <div className="flex gap-4">
                                 <button className="relative" onClick={() => setShowMessages(true)}>
                                     <MessageSquare className="w-6 h-6 text-gray-400" />
-                                    {messages.filter(m => m.status === 'OPEN').length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full border-2 border-white">{messages.filter(m => m.status === 'OPEN').length}</span>}
+                                    {unreadMessagesCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full border-2 border-white">{unreadMessagesCount}</span>}
                                 </button>
                                 <button className="relative" onClick={() => setShowNotifications(true)}>
                                     <Bell className="w-6 h-6 text-gray-400" />
@@ -208,6 +207,28 @@ const RoomAdminDashboard = ({ roomId }) => {
                                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="px-6 mb-6 grid grid-cols-2 gap-3">
+                        <button
+                            onClick={handleCloseCycle}
+                            className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group"
+                        >
+                            <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full group-hover:scale-110 transition-transform">
+                                <Wallet className="w-5 h-5" />
+                            </div>
+                            <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Close Cycle</span>
+                        </button>
+                        <button
+                            onClick={() => { setActiveTab('members'); }}
+                            className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors group"
+                        >
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-brand-blue rounded-full group-hover:scale-110 transition-transform">
+                                <Mail className="w-5 h-5" />
+                            </div>
+                            <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Email All</span>
+                        </button>
                     </div>
 
                     <div className="px-6 space-y-6 pb-24">
@@ -524,11 +545,11 @@ const RoomAdminDashboard = ({ roomId }) => {
                             </div>
                             <div className="space-y-4">
                                 {notifications.length === 0 ? <p className="text-gray-400 text-center mt-10">No notifications.</p> : notifications.map(notif => (
-                                    <div key={notif.id} className="bg-white dark:bg-gray-700 p-4 rounded-xl border border-gray-100 dark:border-gray-600 shadow-sm flex gap-3">
-                                        <div className="w-2 h-2 rounded-full bg-brand-orange mt-2 shrink-0"></div>
+                                    <div key={notif.id} className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800/30 shadow-sm flex gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 animate-pulse"></div>
                                         <div>
-                                            <p className="text-sm text-gray-700 dark:text-gray-200">{notif.content}</p>
-                                            <span className="text-[10px] text-gray-400 block mt-1">{new Date(notif.createdAt).toLocaleDateString()}</span>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{notif.content}</p>
+                                            <span className="text-[10px] text-red-400 block mt-1">{new Date(notif.createdAt).toLocaleDateString()}</span>
                                         </div>
                                     </div>
                                 ))}

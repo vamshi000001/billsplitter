@@ -258,6 +258,35 @@ exports.deleteRoom = async (req, res, next) => {
     }
 };
 
+exports.updateRoom = async (req, res, next) => {
+    try {
+        const { roomId } = req.params;
+        const { threshold } = req.body;
+        const adminId = req.user.userId;
+
+        // Find Room
+        const room = await prisma.room.findUnique({ where: { id: parseInt(roomId) } });
+        if (!room) return res.status(404).json({ message: "Room not found" });
+
+        // Check Authorization (Only Admin)
+        if (room.adminId !== adminId) {
+            return res.status(403).json({ message: "Only the room admin can update settings." });
+        }
+
+        // Update
+        const updatedRoom = await prisma.room.update({
+            where: { id: parseInt(roomId) },
+            data: {
+                threshold: threshold ? parseInt(threshold) : undefined
+            }
+        });
+
+        return res.status(200).json({ message: "Room updated successfully", room: updatedRoom });
+    } catch (err) {
+        next(err);
+    }
+};
+
 exports.notifyMembers = async (req, res, next) => {
     try {
         const { roomId } = req.params;
