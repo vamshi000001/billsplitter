@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 
 const AppAdminDashboard = () => {
@@ -12,8 +11,8 @@ const AppAdminDashboard = () => {
         const fetchData = async () => {
             try {
                 // In a real app, attach token header
-                const statsRes = await axios.get('http://localhost:5000/api/admin/stats');
-                const roomsRes = await axios.get('http://localhost:5000/api/admin/rooms');
+                const statsRes = await api.get('/admin/stats');
+                const roomsRes = await api.get('/admin/rooms');
                 setStats(statsRes.data);
                 setRooms(roomsRes.data);
                 setLoading(false);
@@ -27,7 +26,7 @@ const AppAdminDashboard = () => {
 
     const handleBan = async (roomId, currentStatus) => {
         try {
-            await axios.patch(`http://localhost:5000/api/admin/rooms/${roomId}/ban`, { isBanned: !currentStatus });
+            await api.patch(`/admin/rooms/${roomId}/ban`, { isBanned: !currentStatus });
             setRooms(rooms.map(room => room.id === roomId ? { ...room, isBanned: !currentStatus } : room));
         } catch {
             alert("Failed to update status");
@@ -37,7 +36,7 @@ const AppAdminDashboard = () => {
     const handleDelete = async (roomId) => {
         if (!window.confirm("Are you sure? This will delete all data for this room.")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/admin/rooms/${roomId}`);
+            await api.delete(`/admin/rooms/${roomId}`);
             setRooms(rooms.filter(room => room.id !== roomId));
         } catch {
             alert("Failed to delete room");
@@ -93,7 +92,7 @@ const AppAdminDashboard = () => {
                         const message = e.target.message.value;
                         if (!subject || !message) return alert("Please fill all fields");
                         try {
-                            await axios.post('http://localhost:5000/api/admin/broadcast', { subject, message });
+                            await api.post('/admin/broadcast', { subject, message });
                             alert("Broadcast Sent Successfully!");
                             e.target.reset();
                         } catch (err) {
