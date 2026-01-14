@@ -14,7 +14,7 @@ const AppAdminLogin = () => {
         setIsLoading(true);
         setError('');
         try {
-            const response = await axios.post('http://localhost:3000/api/admin/login', { email, password });
+            const response = await axios.post('http://localhost:5000/api/admin/login', { email, password });
             localStorage.setItem('adminToken', response.data.token);
             navigate('/app-admin/dashboard');
         } catch (err) {
