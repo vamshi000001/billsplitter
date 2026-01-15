@@ -1,17 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis } from 'recharts';
 import { Bell, Settings, Home, MessageSquare, Plus, X } from 'lucide-react';
 
 const RoomMemberDashboard = ({ roomId }) => {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     // State
     const [expenses, setExpenses] = useState([]);
-
+    const [members, setMembers] = useState([]);
     const [roomTitle, setRoomTitle] = useState('');
+    const [adminId, setAdminId] = useState(null);
     const [cycleSummary, setCycleSummary] = useState(null);
     const [categoryAnalytics, setCategoryAnalytics] = useState({});
     const [monthlyAnalytics, setMonthlyAnalytics] = useState([]);
@@ -37,6 +40,8 @@ const RoomMemberDashboard = ({ roomId }) => {
 
 
             setRoomTitle(roomRes.data.title);
+            setAdminId(roomRes.data.adminId);
+            setMembers(roomRes.data.members || []);
             setExpenses(expRes.data);
             setCycleSummary(sumRes.data);
             setCategoryAnalytics(analyticsRes.data);
@@ -85,8 +90,8 @@ const RoomMemberDashboard = ({ roomId }) => {
             <div className="bg-white dark:bg-gray-800 px-6 pt-12 pb-6 shadow-sm rounded-b-3xl mb-6">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100">
-                            M
+                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100 uppercase">
+                            {user?.name?.charAt(0) || 'M'}
                         </div>
                         <div>
                             <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Member View</p>
@@ -103,31 +108,36 @@ const RoomMemberDashboard = ({ roomId }) => {
 
                 {/* Main Stat Card (Brand Orange/Gradient) */}
                 {cycleSummary && (
-                    <div className="bg-gradient-to-r from-brand-orange to-orange-400 text-white rounded-[2rem] p-6 shadow-xl shadow-brand-orange/20 relative overflow-hidden">
-                        <div className="relative z-10">
-                            <p className="opacity-80 text-sm font-medium mb-1">Your Contribution</p>
-                            <h2 className="text-4xl font-bold mb-6">₹{cycleSummary.userShare?.toLocaleString() || '0'}</h2>
+                    <div className="bg-gradient-to-br from-brand-orange via-orange-500 to-orange-600 text-white rounded-[2.5rem] p-8 shadow-2xl shadow-brand-orange/30 relative overflow-hidden group">
+                        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                            <div>
+                                <p className="opacity-90 text-sm font-bold uppercase tracking-widest mb-2">My Contribution</p>
+                                <h2 className="text-5xl font-black mb-1 drop-shadow-sm transition-transform group-hover:scale-105 duration-500 origin-left">
+                                    ₹{cycleSummary.userShare?.toLocaleString() || '0'}
+                                </h2>
+                                <p className="text-xs opacity-70 font-medium tracking-wide">Current Cycle Split</p>
+                            </div>
 
-                            <div className="flex justify-between items-end">
-                                <div>
-                                    <p className="text-xs opacity-70 mb-1">Total Room Spending</p>
-                                    <p className="font-semibold">₹{cycleSummary.total.toLocaleString()}</p>
+                            <div className="flex flex-col items-start md:items-end justify-between md:justify-center gap-4 border-t md:border-t-0 md:border-l border-white/20 pt-6 md:pt-0 md:pl-10">
+                                <div className="text-left md:text-right">
+                                    <p className="text-[10px] opacity-70 uppercase font-black tracking-widest mb-1">Room Total</p>
+                                    <p className="text-xl font-bold">₹{cycleSummary.total.toLocaleString()}</p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${cycleSummary.unpaid > 0 ? 'bg-red-500 text-white' : 'bg-white/20 text-white'}`}>
-                                        {cycleSummary.unpaid > 0 ? 'Unpaid' : 'Clear'}
+                                    <span className={`px-6 py-2 rounded-2xl text-[10px] font-black shadow-xl uppercase tracking-widest transition-all ${cycleSummary.paymentStatus === 'PAID' ? 'bg-white text-emerald-500 scale-110 shadow-emerald-500/20' : 'bg-red-500 text-white animate-pulse shadow-red-500/40'}`}>
+                                        {cycleSummary.paymentStatus || 'UNPAID'}
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        {/* Decorative Circles */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                        {/* Decorative Premium Elements */}
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl group-hover:scale-125 transition-transform duration-700"></div>
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-300/20 rounded-full -ml-16 -mb-16 blur-2xl"></div>
                     </div>
                 )}
             </div>
 
-            <div className="px-5 space-y-6">
+            <div className="px-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* Spending Chart (Pie) */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 min-h-[250px] flex items-center justify-center relative">
@@ -174,6 +184,39 @@ const RoomMemberDashboard = ({ roomId }) => {
                                 <Bar dataKey="total" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
+            <div className="px-5 space-y-6">
+
+                {/* Roommates List */}
+                <div className="pb-4">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-4 px-1">Roommates</h3>
+                    <div className="space-y-4">
+                        {members.map(member => (
+                            <div key={member.id} className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center transition-all hover:shadow-md">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold border-2 border-white dark:border-gray-700 shadow-sm uppercase">
+                                        {member.user.name.charAt(0)}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h4 className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                                            {member.user.name}
+                                            {member.user.id === user?.id && ' (You)'}
+                                        </h4>
+                                        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">
+                                            {member.userId === adminId ? 'Room Admin' : 'Roommate'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-sm ${member.paymentStatus === 'PAID' ? 'bg-emerald-500 text-white' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'}`}>
+                                        {member.paymentStatus}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
