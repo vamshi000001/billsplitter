@@ -118,8 +118,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Rooms Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Rooms Grid (Single Column as requested) */}
+        <div className="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
           {loading ? (
             [1, 2, 3].map(i => (
               <div key={i} className="h-48 bg-white dark:bg-gray-800 rounded-[2.5rem] animate-pulse shadow-sm border border-gray-100 dark:border-gray-700"></div>
@@ -213,7 +213,7 @@ const Dashboard = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-brand-blue font-black text-[10px] sm:text-sm uppercase tracking-widest group-hover:translate-x-1 transition-transform flex-shrink-0">
-                      Manage
+                      Enter into Room
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Users, Wallet, ShieldCheck, Zap, Sparkles } from 'lucide-react';
 import Waves from '../components/Waves';
 
@@ -133,6 +133,9 @@ const Landing = () => {
                 {/* Footer */}
                 <footer className="mt-40 pb-12 opacity-60">
                     <p className="text-gray-500 dark:text-gray-400 font-bold tracking-widest text-xs uppercase">© 2024 Bill Splitter • Built for Roommates</p>
+                    <div className="mt-4">
+                        <Link to="/admin" className="text-[10px] text-gray-400 hover:text-blue-500 font-bold uppercase tracking-widest transition-colors">Admin Access</Link>
+                    </div>
                 </footer>
 
             </main>

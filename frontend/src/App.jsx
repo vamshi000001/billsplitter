@@ -58,6 +58,11 @@ function App() {
             <Route path="/accept-invite" element={<AcceptInvite />} />
             <Route path="/appadminlogin" element={<AppAdminLogin />} />
             <Route path="/app-admin/dashboard" element={<AppAdminDashboard />} />
+
+            {/* Admin Redirects */}
+            <Route path="/admin" element={<Navigate to="/appadminlogin" />} />
+            <Route path="/admin/dashboard" element={<Navigate to="/app-admin/dashboard" />} />
+            <Route path="/admin/login" element={<Navigate to="/appadminlogin" />} />
           </Routes>
         </div>
       </AuthProvider>
