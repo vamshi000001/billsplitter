@@ -137,3 +137,110 @@
 .animate-slide-up-mobile {
   animation: slideUpMobile 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-morphism {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Hero Waves Animation */
+.animate-waves>use {
+  animation: move-forever 25s cubic-bezier(.55, .5, .45, .5) infinite;
+}
+
+.animate-wave-para1 {
+  animation-delay: -2s !important;
+  animation-duration: 7s !important;
+}
+
+.animate-wave-para2 {
+  animation-delay: -3s !important;
+  animation-duration: 10s !important;
+}
+
+.animate-wave-para3 {
+  animation-delay: -4s !important;
+  animation-duration: 13s !important;
+}
+
+.animate-wave-para4 {
+  animation-delay: -5s !important;
+  animation-duration: 20s !important;
+}
+
+@keyframes move-forever {
+  0% {
+    transform: translate3d(-90px, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(85px, 0, 0);
+  }
+}
+
+/* Floating Money Animation */
+@keyframes float-money {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-20vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-money {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1;
+  animation: float-money linear infinite;
+  font-size: 1.5rem;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Sticky Nav Scrolled State */
+.nav-scrolled {
+  @apply py-3 shadow-2xl bg-white/90 dark:bg-gray-950/90 border-blue-500/10;
+  backdrop-filter: blur(20px);
+}

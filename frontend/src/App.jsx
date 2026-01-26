@@ -13,6 +13,8 @@ import AddRoommate from './pages/AddRoommate';
 import AcceptInvite from './pages/AcceptInvite';
 import Settings from './pages/Settings';
 
+import AIHelper from './components/AIHelper';
+
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -20,6 +22,7 @@ function App() {
     <Router>
       <AuthProvider>
         <Toaster position="top-center" toastOptions={{ duration: 3000, style: { background: '#333', color: '#fff' } }} />
+        <AIHelper />
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
           <Routes>
             <Route path="/" element={<Landing />} />

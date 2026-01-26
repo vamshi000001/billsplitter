@@ -67,7 +67,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 font-sans transition-colors duration-300">
 
       {/* Professional Admin Navbar */}
-      <div className="bg-white/80 backdrop-blur-md dark:bg-gray-800/80 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 transition-all">
+      <div className="bg-white/40 backdrop-blur-2xl dark:bg-gray-900/40 border-b border-white/30 dark:border-gray-800 shadow-sm sticky top-0 z-30 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="bg-brand-blue/10 dark:bg-blue-900/30 p-2 rounded-lg">
