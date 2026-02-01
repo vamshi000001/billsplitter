@@ -8,7 +8,8 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         // Use adminToken for admin routes, otherwise regular token
-        const isAdminRoute = config.url.includes('/admin/');
+        // Also include feedback/admin in the check
+        const isAdminRoute = config.url.includes('/admin') || config.url.includes('/feedback/admin');
         const token = isAdminRoute ? localStorage.getItem('adminToken') : localStorage.getItem('token');
 
         if (token) {
@@ -27,13 +28,23 @@ api.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             const isAuthRequest = error.config.url.includes('/auth/login') ||
                 error.config.url.includes('/auth/register') ||
-                error.config.url.includes('/auth/roommate-login');
+                error.config.url.includes('/auth/roommate-login') ||
+                error.config.url.includes('/admin/login');
 
             if (!isAuthRequest) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                localStorage.removeItem('loginType');
-                window.location.href = '/login';
+                // Check if we are in admin section based on URL
+                const isPageAdmin = window.location.pathname.startsWith('/app-admin') ||
+                    window.location.pathname.startsWith('/admin');
+
+                if (isPageAdmin) {
+                    localStorage.removeItem('adminToken');
+                    window.location.href = '/appadminlogin';
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('loginType');
+                    window.location.href = '/login';
+                }
             }
         }
         return Promise.reject(error);

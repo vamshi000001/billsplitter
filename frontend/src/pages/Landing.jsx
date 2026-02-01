@@ -33,7 +33,7 @@ const Landing = () => {
                         <div className="p-1.5 md:p-2 bg-blue-600 rounded-xl md:rounded-2xl shadow-lg shadow-blue-500/30 group-hover:rotate-12 transition-all duration-300">
                             <img src="/assets/logo.png" alt="Logo" className="w-6 h-6 md:w-8 md:h-8 object-contain" />
                         </div>
-                        <span className={`font-extrabold text-xl md:text-2xl tracking-tight transition-colors ${scrolled ? 'text-gray-900' : 'text-gray-900 dark:text-white'}`}>Bill Splitter</span>
+                        <span className={`font-extrabold text-xl md:text-2xl tracking-tight transition-colors ${scrolled ? 'text-gray-900' : 'text-gray-900 dark:text-white'}`}>SplitApp</span>
                     </div>
                     <div className="flex gap-2 md:gap-4 items-center">
                         <button onClick={() => navigate('/login')} className={`px-3 md:px-5 py-2 rounded-xl font-bold text-sm md:text-base transition-all ${scrolled ? 'text-gray-600 hover:text-blue-600' : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>Log In</button>
@@ -47,11 +47,11 @@ const Landing = () => {
 
                 <div className="inline-flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full glass-morphism mb-8 md:mb-10 animate-fade-in-down shadow-xl shadow-blue-500/5">
                     <span className="flex h-2 md:h-2.5 w-2 md:w-2.5 rounded-full bg-blue-600 animate-pulse"></span>
-                    <span className="text-[11px] md:text-[13px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">The Future of Bill Splitting</span>
+                    <span className="text-[11px] md:text-[13px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">The Future of SplitApp</span>
                 </div>
 
                 <h1 className="text-5xl md:text-8xl font-black text-gray-900 dark:text-white mb-6 md:mb-8 leading-tight tracking-tight animate-scale-up">
-                    Bill Splitting <br />
+                    SplitApp <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 animate-pulse">Made Amazing</span>
                 </h1>
 
@@ -132,7 +132,7 @@ const Landing = () => {
 
                 {/* Footer */}
                 <footer className="mt-40 pb-12 opacity-60">
-                    <p className="text-gray-500 dark:text-gray-400 font-bold tracking-widest text-xs uppercase">© 2024 Bill Splitter • Built for Roommates</p>
+                    <p className="text-gray-500 dark:text-gray-400 font-bold tracking-widest text-xs uppercase">© 2024 SplitApp • Built for Roommates</p>
                     <div className="mt-4">
                         <Link to="/admin" className="text-[10px] text-gray-400 hover:text-blue-500 font-bold uppercase tracking-widest transition-colors">Admin Access</Link>
                     </div>

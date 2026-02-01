@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { Link } from 'react-router-dom';
-import { Pencil, Check, X, LogOut, LayoutDashboard, Wallet } from 'lucide-react'; // Added icons
+import { Pencil, Check, X, LogOut, LayoutDashboard, Wallet, Plus, Loader2, Megaphone } from 'lucide-react'; // Added icons
 import toast from 'react-hot-toast';
+import FeedbackForm from '../components/FeedbackForm';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -14,6 +15,10 @@ const Dashboard = () => {
   const [editingRoomId, setEditingRoomId] = useState(null);
   const [editThreshold, setEditThreshold] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
+  const [newRoomForm, setNewRoomForm] = useState({ title: '', threshold: 1000 });
+  const [creating, setCreating] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   // Fetch rooms logic
   const fetchRooms = async () => {
@@ -63,6 +68,28 @@ const Dashboard = () => {
     }
   };
 
+
+  const handleCreateRoom = async (e) => {
+    e.preventDefault();
+    if (!newRoomForm.title) {
+      toast.error("Please enter a room name");
+      return;
+    }
+    setCreating(true);
+    try {
+      await api.post('/rooms', newRoomForm);
+      toast.success("Room created successfully!");
+      setShowCreateRoomModal(false);
+      setNewRoomForm({ title: '', threshold: 1000 });
+      fetchRooms();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to create room");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 font-sans transition-colors duration-300">
 
@@ -74,7 +101,7 @@ const Dashboard = () => {
               <LayoutDashboard className="w-6 h-6 text-brand-blue dark:text-blue-400" />
             </div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-              Admin<span className="text-brand-blue">Panel</span>
+              Split<span className="text-brand-blue">App</span>
             </h1>
           </div>
 
@@ -84,6 +111,13 @@ const Dashboard = () => {
               <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{user?.role || 'Admin'}</span>
             </div>
             <div className="h-8 w-[1px] bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
+            <button
+              onClick={() => setShowFeedbackModal(true)}
+              className="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-blue-600 transition-colors"
+              title="Give Feedback"
+            >
+              <Megaphone className="w-5 h-5" />
+            </button>
             <button
               onClick={logout}
               className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -105,7 +139,15 @@ const Dashboard = () => {
           </div>
 
           {/* Stats Overview */}
-          <div className="flex gap-4 px-2 sm:px-0">
+          <div className="flex flex-col sm:flex-row gap-4 px-2 sm:px-0">
+            <button
+              onClick={() => setShowCreateRoomModal(true)}
+              className="w-full sm:w-auto px-8 py-4 bg-brand-blue text-white font-black rounded-[2rem] shadow-xl shadow-brand-blue/30 hover:bg-blue-700 hover:shadow-brand-blue/40 transform hover:-translate-y-1 active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Create Room
+            </button>
+
             <div className="w-full sm:w-auto bg-white dark:bg-gray-800 px-6 py-5 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 group transition-all hover:shadow-md">
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-brand-blue dark:text-blue-400 group-hover:scale-110 transition-transform">
                 <LayoutDashboard className="w-6 h-6" />
@@ -234,6 +276,73 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Create Room Modal */}
+      {showCreateRoomModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreateRoomModal(false)}></div>
+          <div className="relative bg-white dark:bg-gray-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-scale-up border border-white/20">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Create New Room</h2>
+              <button onClick={() => setShowCreateRoomModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateRoom} className="space-y-6">
+              <div>
+                <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 block">Room Title</label>
+                <input
+                  type="text"
+                  value={newRoomForm.title}
+                  onChange={(e) => setNewRoomForm({ ...newRoomForm, title: e.target.value })}
+                  placeholder="e.g. Dream House"
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent focus:border-brand-blue rounded-2xl text-gray-900 dark:text-white font-bold outline-none transition-all placeholder:text-gray-400"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 block">Monthly Threshold (Optional)</label>
+                <div className="relative">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-gray-400">₹</span>
+                  <input
+                    type="number"
+                    value={newRoomForm.threshold}
+                    onChange={(e) => setNewRoomForm({ ...newRoomForm, threshold: e.target.value })}
+                    placeholder="1000"
+                    className="w-full pl-10 pr-5 py-4 bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent focus:border-brand-blue rounded-2xl text-gray-900 dark:text-white font-bold outline-none transition-all placeholder:text-gray-400"
+                  />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2 font-medium">Automatic alerts when spending exceeds this limit.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateRoomModal(false)}
+                  className="py-4 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-black rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="py-4 bg-brand-blue text-white font-black rounded-2xl shadow-lg shadow-brand-blue/30 hover:bg-blue-600 transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {creating ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* AI Chat Helper */}
+      {/* Feedback Form */}
+      <FeedbackForm
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+      />
     </div>
   );
 };

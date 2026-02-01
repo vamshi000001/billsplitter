@@ -4,7 +4,9 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis } from 'recharts';
-import { Bell, Settings, Home, MessageSquare, Plus, X } from 'lucide-react';
+import { Bell, Settings, Home, MessageSquare, MessageCircle, Megaphone, Plus, X } from 'lucide-react';
+import FeedbackForm from '../components/FeedbackForm';
+import { triggerConfetti } from '../utils/confetti';
 
 const RoomMemberDashboard = ({ roomId }) => {
     const navigate = useNavigate();
@@ -25,6 +27,7 @@ const RoomMemberDashboard = ({ roomId }) => {
     const [activeTab, setActiveTab] = useState('home');
     const [showNotifications, setShowNotifications] = useState(false);
     const [showMessageModal, setShowMessageModal] = useState(false);
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
     const [messageContent, setMessageContent] = useState('');
     const [sending, setSending] = useState(false);
 
@@ -66,6 +69,16 @@ const RoomMemberDashboard = ({ roomId }) => {
         fetchData();
     }, [fetchData]);
 
+    useEffect(() => {
+        if (!loading) {
+            const storageKey = `room_visited_${roomId}`;
+            if (!localStorage.getItem(storageKey)) {
+                triggerConfetti();
+                localStorage.setItem(storageKey, 'true');
+            }
+        }
+    }, [loading, roomId]);
+
     const handleSendMessage = async () => {
         if (!messageContent.trim()) return;
         setSending(true);
@@ -90,6 +103,7 @@ const RoomMemberDashboard = ({ roomId }) => {
             <div className="bg-white dark:bg-gray-800 px-6 pt-12 pb-6 shadow-sm rounded-b-3xl mb-6">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
+                        {/* ... profile info ... */}
                         <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100 uppercase">
                             {user?.name?.charAt(0) || 'M'}
                         </div>
@@ -99,6 +113,9 @@ const RoomMemberDashboard = ({ roomId }) => {
                         </div>
                     </div>
                     <div className="flex gap-4">
+                        <button className="relative" onClick={() => setShowFeedbackModal(true)} title="Give Feedback">
+                            <Megaphone className="w-6 h-6 text-gray-400" />
+                        </button>
                         <button className="relative" onClick={() => setShowNotifications(true)}>
                             <Bell className="w-6 h-6 text-gray-400" />
                             {notifications.length > 0 && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
@@ -260,12 +277,16 @@ const RoomMemberDashboard = ({ roomId }) => {
                         <Home className="w-6 h-6" fill={activeTab === 'home' ? "currentColor" : "none"} />
                         <span className="text-[10px] font-bold">Home</span>
                     </button>
+                    <button onClick={() => setShowFeedbackModal(true)} className="flex flex-col items-center gap-1 text-gray-400">
+                        <Megaphone className="w-6 h-6" />
+                        <span className="text-[10px] font-bold">Feedback</span>
+                    </button>
 
                     <button
                         onClick={() => { setActiveTab('message'); setShowMessageModal(true); }}
                         className="w-14 h-14 bg-gradient-to-r from-brand-orange to-orange-400 rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-orange/40 -mt-8 border-4 border-gray-50 dark:border-gray-900"
                     >
-                        <MessageSquare className="w-6 h-6" />
+                        <MessageCircle className="w-6 h-6" />
                     </button>
 
                     <button onClick={() => { setActiveTab('settings'); navigate('/settings'); }} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-brand-blue' : 'text-gray-400'}`}>
@@ -329,6 +350,12 @@ const RoomMemberDashboard = ({ roomId }) => {
                     </div>
                 )
             }
+
+            <FeedbackForm
+                isOpen={showFeedbackModal}
+                onClose={() => setShowFeedbackModal(false)}
+                roomId={roomId}
+            />
 
         </div>
     );

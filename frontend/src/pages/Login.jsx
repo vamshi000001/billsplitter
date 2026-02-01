@@ -102,9 +102,9 @@ const Login = () => {
                     </div>
 
                     <div className="flex justify-end">
-                        <button type="button" className="text-xs text-gray-400 font-bold hover:text-brand-blue transition-colors">
+                        <Link to="/forgot-password" size="sm" className="text-xs text-gray-400 font-bold hover:text-brand-blue transition-colors">
                             Forgot Password?
-                        </button>
+                        </Link>
                     </div>
 
                     <button
@@ -143,6 +143,12 @@ const Login = () => {
                         <a href="https://www.linkedin.com/in/vamshi-potharaveni-120175271/" target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-white text-blue-800 shadow-sm hover:scale-110 transition-transform">
                             <Linkedin className="w-5 h-5" />
                         </a>
+                    </div>
+
+                    <div className="text-center mt-4">
+                        <Link to="/appadminlogin" className="text-[10px] font-bold text-gray-300 hover:text-brand-blue uppercase tracking-widest transition-colors">
+                            Super Admin Login
+                        </Link>
                     </div>
                 </div>
             </div>

@@ -7,7 +7,9 @@ import toast from 'react-hot-toast';
 import StatusModal from '../components/StatusModal';
 import ConfirmModal from '../components/ConfirmModal';
 import DeleteRoomModal from '../components/DeleteRoomModal';
-import { Bell, Settings, Home, Plus, Users, Wallet, MessageSquare, X, Check, Mail, Send, Trash2, Receipt, Calendar } from 'lucide-react';
+import { Bell, Settings, Home, Plus, Users, Wallet, MessageSquare, MessageCircle, Megaphone, X, Check, Mail, Send, Trash2, Receipt, Calendar } from 'lucide-react';
+import FeedbackForm from '../components/FeedbackForm';
+import { triggerConfetti } from '../utils/confetti';
 
 const RoomAdminDashboard = ({ roomId }) => {
     const { user } = useAuth();
@@ -18,13 +20,13 @@ const RoomAdminDashboard = ({ roomId }) => {
     const [members, setMembers] = useState([]);
     const [messages, setMessages] = useState([]);
     const [notifications, setNotifications] = useState([]);
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
     const [cycleSummary, setCycleSummary] = useState(null);
     const [categoryAnalytics, setCategoryAnalytics] = useState({});
     const [monthlyAnalytics, setMonthlyAnalytics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [roomTitle, setRoomTitle] = useState('');
-
 
     // Mobile Navigation State
     const [activeTab, setActiveTab] = useState('home'); // home, expense, members
@@ -92,6 +94,16 @@ const RoomAdminDashboard = ({ roomId }) => {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    useEffect(() => {
+        if (!loading) {
+            const storageKey = `room_visited_${roomId}`;
+            if (!localStorage.getItem(storageKey)) {
+                triggerConfetti();
+                localStorage.setItem(storageKey, 'true');
+            }
+        }
+    }, [loading, roomId]);
 
     const handleAddExpense = async (e) => {
         e.preventDefault();
@@ -170,7 +182,14 @@ const RoomAdminDashboard = ({ roomId }) => {
         try {
             await api.post(`/rooms/${roomId}/delete-secure`, { password });
             toast.success("Room deleted successfully. Redirecting...");
-            setTimeout(() => navigate('/dashboard'), 1500);
+            triggerConfetti();
+            localStorage.removeItem(`room_visited_${roomId}`);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('loginType');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
             setShowDeleteRoomModal(false);
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to delete room. Please check your password.");
@@ -255,6 +274,16 @@ const RoomAdminDashboard = ({ roomId }) => {
         });
     };
 
+    const handleMarkNotificationRead = async (notifId) => {
+        try {
+            await api.patch(`/notifications/${notifId}/read`);
+            setNotifications(notifications.filter(n => n.id !== notifId));
+            toast.success("Notification cleared");
+        } catch (err) {
+            console.error("Failed to mark notification as read", err);
+        }
+    };
+
     if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div></div>;
 
     const unreadMessagesCount = messages.filter(m => m.status === 'OPEN').length;
@@ -268,6 +297,7 @@ const RoomAdminDashboard = ({ roomId }) => {
                     <div className="bg-white dark:bg-gray-800 px-6 pt-12 pb-6 shadow-sm rounded-b-3xl mb-6">
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-4">
+                                {/* ... existing profile info ... */}
                                 <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-lg border-2 border-blue-100 uppercase">
                                     {user?.name?.charAt(0) || 'A'}
                                 </div>
@@ -277,8 +307,11 @@ const RoomAdminDashboard = ({ roomId }) => {
                                 </div>
                             </div>
                             <div className="flex gap-4">
+                                <button className="relative" onClick={() => setShowFeedbackModal(true)} title="Give Feedback">
+                                    <Megaphone className="w-6 h-6 text-gray-400" />
+                                </button>
                                 <button className="relative" onClick={() => setShowMessages(true)}>
-                                    <MessageSquare className="w-6 h-6 text-gray-400" />
+                                    <MessageCircle className="w-6 h-6 text-gray-400" />
                                     {unreadMessagesCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full border-2 border-white">{unreadMessagesCount}</span>}
                                 </button>
                                 <button className="relative" onClick={() => setShowNotifications(true)}>
@@ -573,6 +606,10 @@ const RoomAdminDashboard = ({ roomId }) => {
                         <Users className="w-6 h-6" fill={activeTab === 'members' ? "currentColor" : "none"} />
                     </button>
 
+                    <button onClick={() => setShowFeedbackModal(true)} className="flex flex-col items-center gap-1 text-gray-400">
+                        <Megaphone className="w-6 h-6" />
+                    </button>
+
                     {/* Floating Add Button in Center */}
                     <button
                         onClick={() => { setActiveTab('add'); setShowAddExpenseModal(true); }}
@@ -713,12 +750,19 @@ const RoomAdminDashboard = ({ roomId }) => {
                             </div>
                             <div className="space-y-4">
                                 {notifications.length === 0 ? <p className="text-gray-400 text-center mt-10">No notifications.</p> : notifications.map(notif => (
-                                    <div key={notif.id} className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800/30 shadow-sm flex gap-3">
+                                    <div key={notif.id} className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800/30 shadow-sm flex items-start gap-3 relative group">
                                         <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 animate-pulse"></div>
-                                        <div>
+                                        <div className="flex-1">
                                             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{notif.content}</p>
                                             <span className="text-[10px] text-red-400 block mt-1">{new Date(notif.createdAt).toLocaleDateString()}</span>
                                         </div>
+                                        <button
+                                            onClick={() => handleMarkNotificationRead(notif.id)}
+                                            className="p-1 rounded-full bg-white dark:bg-gray-800 text-green-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-green-50"
+                                            title="Mark as Read"
+                                        >
+                                            <Check className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -727,13 +771,19 @@ const RoomAdminDashboard = ({ roomId }) => {
                 )
             }
 
+            <FeedbackForm
+                isOpen={showFeedbackModal}
+                onClose={() => setShowFeedbackModal(false)}
+                roomId={roomId}
+            />
+
             <DeleteRoomModal
                 isOpen={showDeleteRoomModal}
                 onClose={() => setShowDeleteRoomModal(false)}
                 onConfirm={handleDeleteRoom}
                 roomTitle={roomTitle}
             />
-        </div >
+        </div>
     );
 };
 

@@ -1,9 +1,21 @@
 services:
-  - type: static
-    name: billsplitter-web
-    env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
+  - type: web
+    name: splitapp-backend
+    env: node
+    region: singapore # Optional: specific region
+    buildCommand: cd backend && npm install && npx prisma generate
+    startCommand: cd backend && npm start
+    branch: main
     envVars:
-      - key: VITE_API_URL
+      - key: DATABASE_URL
         sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: PORT
+        value: 5000

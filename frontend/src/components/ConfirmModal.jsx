@@ -10,11 +10,14 @@ const ConfirmModal = ({
     confirmText = "Delete",
     cancelText = "Cancel",
     buttons = null,
-    icon: Icon = AlertTriangle,
+    icon: PassedIcon,
     iconColor = "text-red-600 dark:text-red-400",
     iconBg = "bg-red-50 dark:bg-red-900/20"
 }) => {
     if (!isOpen) return null;
+
+    // Use passed icon or default to AlertTriangle
+    const DisplayIcon = PassedIcon || AlertTriangle;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -39,7 +42,7 @@ const ConfirmModal = ({
                     {/* Icon Section */}
                     <div className={`w-20 h-20 ${iconBg} rounded-full flex items-center justify-center mb-6`}>
                         <div className={`w-14 h-14 ${iconBg.replace('20', '30')} rounded-full flex items-center justify-center ${iconColor}`}>
-                            <Icon className="w-8 h-8" />
+                            <DisplayIcon className="w-8 h-8" />
                         </div>
                     </div>
 

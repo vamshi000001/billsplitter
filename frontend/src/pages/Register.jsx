@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Facebook, Instagram, Linkedin, Loader2, Eye, EyeOff } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 const Register = () => {
     const [roomName, setRoomName] = useState('');
@@ -14,13 +15,37 @@ const Register = () => {
     const { register } = useAuth();
     const navigate = useNavigate();
 
+    const triggerConfetti = () => {
+        const duration = 3 * 1000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+        const interval = setInterval(function () {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+            // since particles fall down, start a bit higher than random
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+            confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        }, 250);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
             await register(name, email, password, roomName);
-            navigate('/login');
+            triggerConfetti();
+            setTimeout(() => {
+                navigate('/dashboard');
+            }, 2000);
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed');
         } finally {

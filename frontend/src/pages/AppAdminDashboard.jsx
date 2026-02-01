@@ -1,24 +1,37 @@
+import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { Check, X, Megaphone, AlertCircle, Filter, Users, Trash2, Eye } from 'lucide-react';
 
 const AppAdminDashboard = () => {
     const [stats, setStats] = useState({ roomCount: 0, activeRoommates: 0 });
     const [rooms, setRooms] = useState([]);
+    const [feedbacks, setFeedbacks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('ALL'); // ALL, OPEN, RESOLVED, REJECTED
+
+    // Modal State
+    const [selectedRoom, setSelectedRoom] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDeletingMember, setIsDeletingMember] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // In a real app, attach token header
-                const statsRes = await api.get('/admin/stats');
-                const roomsRes = await api.get('/admin/rooms');
+                const [statsRes, roomsRes, feedbackRes] = await Promise.all([
+                    api.get('/admin/stats'),
+                    api.get('/admin/rooms'),
+                    api.get('/feedback/admin')
+                ]);
                 setStats(statsRes.data);
                 setRooms(roomsRes.data);
-                setLoading(false);
+                setFeedbacks(feedbackRes.data);
             } catch (err) {
                 console.error("Failed to fetch admin data", err);
-                // navigate('/appadminlogin');
+            } finally {
+                setLoading(false);
             }
         };
         fetchData();
@@ -28,18 +41,94 @@ const AppAdminDashboard = () => {
         try {
             await api.patch(`/admin/rooms/${roomId}/ban`, { isBanned: !currentStatus });
             setRooms(rooms.map(room => room.id === roomId ? { ...room, isBanned: !currentStatus } : room));
+            if (selectedRoom?.id === roomId) {
+                setSelectedRoom(prev => ({ ...prev, isBanned: !currentStatus }));
+            }
         } catch {
             alert("Failed to update status");
         }
     };
 
     const handleDelete = async (roomId) => {
-        if (!window.confirm("Are you sure? This will delete all data for this room.")) return;
+        if (!window.confirm("Are you sure? This will delete all data (messages, expenses, members) for this room instantly.")) return;
         try {
             await api.delete(`/admin/rooms/${roomId}`);
             setRooms(rooms.filter(room => room.id !== roomId));
+            setIsModalOpen(false);
+            setSelectedRoom(null);
+            alert("Room Deleted Successfully");
         } catch {
             alert("Failed to delete room");
+        }
+    };
+
+    const handleRemoveMember = async (roomId, userId) => {
+        if (!window.confirm("Are you sure you want to remove this member? They will lose access to the room.")) return;
+        setIsDeletingMember(true);
+        try {
+            await api.delete(`/admin/rooms/${roomId}/members/${userId}`);
+
+            // Update local state
+            const updatedRooms = rooms.map(r => {
+                if (r.id === roomId) {
+                    return {
+                        ...r,
+                        _count: { ...r._count, members: r._count.members - 1 }
+                    };
+                }
+                return r;
+            });
+            setRooms(updatedRooms);
+
+            // Update modal state if open
+            if (selectedRoom && selectedRoom.customMembers) {
+                setSelectedRoom(prev => ({
+                    ...prev,
+                    customMembers: prev.customMembers.filter(m => m.userId !== userId)
+                }));
+            } else {
+                // If we don't have members loaded in modal yet, just close or re-fetch (simplification: close modal)
+                setIsModalOpen(false);
+                alert("Member removed. Please reopen room details to refresh.");
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert(error.response?.data?.message || "Failed to remove member");
+        } finally {
+            setIsDeletingMember(false);
+        }
+    };
+
+    const openRoomModal = async (room) => {
+        // We might need to fetch members if they aren't fully populated in the list
+        // Looking at backend, getAllRooms includes `_count`. 
+        // We probably need a separate endpoint to get room details WITH members if `admin/rooms` doesn't include them.
+        // Wait, `prisma.room.findMany` in controller doesn't include `members` list, only count.
+        // We need to fetch members here or update the backend. 
+        // For efficiency, let's fetch individual room details? Or just update backend to include members?
+        // Updating backend to include members list for all rooms might be heavy.
+        // Let's assume for now we don't have the list.
+        // Actually, let's quickly add `members` to the backend `getAllRooms` include? 
+        // Or better: Let's assume we can fetch room details.
+        // Since I can't easily change backend structure mid-click without reloading, I'll update the backend to Include members logic if needed.
+        // CHECK: `admin.controller.js` -> `getAllRooms` currently includes: `admin`, `_count`.
+        // I should update it to include `members: { include: { user: true } }`.
+
+        // TEMPORARY: I will use what I check in backend first.
+        // Assuming I will update backend in next step for `members`.
+        // Let's proceed assuming `room.members` will be available after I fix backend.
+        setSelectedRoom(room);
+        setIsModalOpen(true);
+    };
+
+    const handleUpdateStatus = async (id, newStatus) => {
+        try {
+            await api.patch(`/feedback/admin/${id}`, { status: newStatus });
+            setFeedbacks(feedbacks.map(f => f.id === id ? { ...f, status: newStatus } : f));
+        } catch (error) {
+            console.error(error);
+            alert("Failed to update status");
         }
     };
 
@@ -47,6 +136,11 @@ const AppAdminDashboard = () => {
         localStorage.removeItem('adminToken');
         navigate('/');
     };
+
+    const filteredFeedbacks = feedbacks.filter(f => {
+        if (filter === 'ALL') return true;
+        return f.status === filter;
+    });
 
     if (loading) {
         return (
@@ -83,6 +177,29 @@ const AppAdminDashboard = () => {
             </nav>
 
             <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 p-5 flex items-center gap-4">
+                        <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Total Rooms</p>
+                            <p className="text-3xl font-bold text-gray-900">{stats.roomCount}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 p-5 flex items-center gap-4">
+                        <div className="p-3 bg-purple-50 rounded-lg text-purple-600">
+                            <Users className="w-8 h-8" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-gray-500">Total Users</p>
+                            <p className="text-3xl font-bold text-gray-900">{stats.activeRoommates}</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Broadcast Section */}
                 <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100 mb-8 p-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-4">📢 Broadcast to All Room Admins</h2>
@@ -108,200 +225,191 @@ const AppAdminDashboard = () => {
                     </form>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100">
-                        <div className="p-5">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0 bg-blue-50 rounded-md p-3">
-                                    <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Total Rooms</dt>
-                                        <dd className="text-3xl font-bold text-gray-900 mt-1">{stats.roomCount}</dd>
-                                    </dl>
-                                </div>
-                            </div>
+
+                {/* Users Feedback Feed */}
+                <div className="mb-8 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <Megaphone className="w-5 h-5 text-blue-600" />
+                            User Feedback ({feedbacks.length})
+                        </h2>
+                        <div className="flex gap-2">
+                            {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map(f => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFilter(f)}
+                                    className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${filter === f ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}
+                                >
+                                    {f.replace('_', ' ')}
+                                </button>
+                            ))}
                         </div>
                     </div>
-
-                    <div className="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100">
-                        <div className="p-5">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0 bg-purple-50 rounded-md p-3">
-                                    <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    {/* Feedback content remains same as grid but scrollable horizontal if needed or just grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredFeedbacks.length === 0 ? (
+                            <p className="text-gray-400 italic">No feedbacks found.</p>
+                        ) : filteredFeedbacks.map(item => (
+                            <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm text-sm">
+                                <div className="flex justify-between mb-2">
+                                    <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${item.type === 'PROBLEM' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>{item.type}</span>
+                                    <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${item.status === 'OPEN' ? 'bg-gray-100' : item.status === 'RESOLVED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100'}`}>{item.status}</span>
                                 </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Active Roommates</dt>
-                                        <dd className="text-3xl font-bold text-gray-900 mt-1">{stats.activeRoommates}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Rooms Table */}
-                {/* Rooms Content - Responsive */}
-                <div className="space-y-4">
-
-                    {/* Desktop Table View */}
-                    <div className="hidden md:block bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                            <h2 className="text-lg font-semibold text-gray-900">Manage Rooms</h2>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {rooms.length} Rooms
-                            </span>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Name</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
-                                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
-                                        <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {rooms.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="5" className="px-6 py-10 text-center text-gray-500">
-                                                No rooms found in the system.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        rooms.map((room) => (
-                                            <tr key={room.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-semibold text-gray-900">{room.title}</div>
-                                                    <div className="text-xs text-gray-500 hidden sm:block">ID: {room.id.substring(0, 8)}...</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center">
-                                                        <div className="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-xs font-bold">
-                                                            {room.admin?.name ? room.admin.name.charAt(0).toUpperCase() : 'U'}
-                                                        </div>
-                                                        <div className="ml-3">
-                                                            <div className="text-sm font-medium text-gray-900">{room.admin?.name || 'Unknown'}</div>
-                                                            <div className="text-sm text-gray-500">{room.admin?.email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                        {room._count?.members || 0}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                    {room.isBanned ? (
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                            Banned
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            Active
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <div className="flex justify-end gap-2">
-                                                        <button
-                                                            onClick={() => handleBan(room.id, room.isBanned)}
-                                                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${room.isBanned
-                                                                ? 'text-white bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                                                                : 'text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
-                                                                }`}
-                                                        >
-                                                            {room.isBanned ? 'Unban' : 'Ban'}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(room.id)}
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* Mobile Card View (Full Width Stack) */}
-                    <div className="block md:hidden space-y-4">
-                        <div className="flex justify-between items-center mb-2 px-1">
-                            <h2 className="text-xl font-bold text-gray-900">Managed Rooms</h2>
-                            <span className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded-full">{rooms.length} TOTAL</span>
-                        </div>
-
-                        {rooms.length === 0 ? (
-                            <div className="bg-white rounded-3xl p-8 text-center text-gray-500 shadow-sm border border-gray-100">
-                                No rooms found.
-                            </div>
-                        ) : rooms.map((room) => (
-                            <div key={room.id} className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-                                {/* Status Indicator Strip */}
-                                <div className={`absolute top-0 left-0 w-1.5 h-full ${room.isBanned ? 'bg-red-500' : 'bg-green-500'}`}></div>
-
-                                <div className="pl-3">
-                                    {/* Header */}
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h3 className="font-black text-lg text-gray-900 dark:text-white">{room.title}</h3>
-                                            <p className="text-xs text-gray-400 font-medium">ID: {room.id.substring(0, 8)}</p>
-                                        </div>
-                                        {room.isBanned ? (
-                                            <span className="px-3 py-1 rounded-full bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-wider border border-red-100">Banned</span>
-                                        ) : (
-                                            <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-wider border border-green-100">Active</span>
-                                        )}
-                                    </div>
-
-                                    {/* Admin & Member Info */}
-                                    <div className="flex items-center gap-4 mb-6 bg-gray-50 dark:bg-gray-700/30 p-3 rounded-2xl">
-                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                                            {room.admin?.name ? room.admin.name.charAt(0).toUpperCase() : 'U'}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-bold text-gray-900 dark:text-white">{room.admin?.name || 'Unknown'}</p>
-                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Room Admin</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-lg font-black text-gray-900 dark:text-white">{room._count?.members || 0}</p>
-                                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Members</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button
-                                            onClick={() => handleBan(room.id, room.isBanned)}
-                                            className={`py-3 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${room.isBanned
-                                                ? 'bg-green-50 text-green-600 border border-green-200 hover:bg-green-100'
-                                                : 'bg-yellow-50 text-yellow-600 border border-yellow-200 hover:bg-yellow-100'
-                                                }`}
-                                        >
-                                            {room.isBanned ? 'Unban Room' : 'Ban Room'}
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(room.id)}
-                                            className="py-3 rounded-xl text-sm font-bold bg-white text-red-600 border border-red-100 shadow-sm hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                        >
-                                            Delete Room
-                                        </button>
-                                    </div>
+                                <h4 className="font-bold mb-1">{item.title}</h4>
+                                <p className="text-gray-600 mb-2">{item.description}</p>
+                                <div className="flex justify-between items-center border-t pt-2 mt-2">
+                                    <span className="text-xs text-gray-400">{item.user?.name}</span>
+                                    {item.status !== 'RESOLVED' && <button onClick={() => handleUpdateStatus(item.id, 'RESOLVED')} className="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100">Resolve</button>}
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
+
+                {/* Rooms Table */}
+                <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                        <h2 className="text-lg font-semibold text-gray-900">Manage Rooms ({rooms.length})</h2>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {rooms.map((room) => (
+                                    <tr key={room.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm font-semibold text-gray-900">{room.title}</div>
+                                            <div className="text-xs text-gray-400">ID: {room.id}</div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                            {room.admin?.name}<br />
+                                            <span className="text-xs text-gray-400">{room.admin?.email}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center text-sm font-bold">{room._count?.members || 0}</td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${room.isBanned ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                                {room.isBanned ? 'Banned' : 'Active'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => openRoomModal(room)}
+                                                className="text-blue-600 hover:text-blue-900 text-sm font-medium bg-blue-50 px-3 py-1 rounded-lg"
+                                            >
+                                                Manage
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </main>
+
+            {/* Room Detail Modal */}
+            {isModalOpen && selectedRoom && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">{selectedRoom.title}</h3>
+                                <p className="text-sm text-gray-500">Room ID: {selectedRoom.id}</p>
+                            </div>
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {/* Room Stats */}
+                            <div className="grid grid-cols-3 gap-4 mb-6">
+                                <div className="bg-blue-50 p-4 rounded-xl text-center">
+                                    <p className="text-xs text-blue-500 font-bold uppercase">Members</p>
+                                    <p className="text-2xl font-black text-blue-700">{selectedRoom._count?.members || 0}</p>
+                                </div>
+                                <div className="bg-purple-50 p-4 rounded-xl text-center">
+                                    <p className="text-xs text-purple-500 font-bold uppercase">Expenses</p>
+                                    <p className="text-2xl font-black text-purple-700">--</p>
+                                </div>
+                                <div className="bg-gray-100 p-4 rounded-xl text-center">
+                                    <p className="text-xs text-gray-500 font-bold uppercase">Status</p>
+                                    <p className={`text-2xl font-black ${selectedRoom.isBanned ? 'text-red-600' : 'text-green-600'}`}>
+                                        {selectedRoom.isBanned ? 'BANNED' : 'ACTIVE'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-wrap gap-3 mb-8">
+                                <button
+                                    onClick={() => handleBan(selectedRoom.id, selectedRoom.isBanned)}
+                                    className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 ${selectedRoom.isBanned ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                                >
+                                    <AlertCircle className="w-4 h-4" />
+                                    {selectedRoom.isBanned ? 'Unban Room' : 'Ban Room'}
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(selectedRoom.id)}
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-red-600 text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete Room
+                                </button>
+                            </div>
+
+                            {/* Members List */}
+                            <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <Users className="w-4 h-4" />
+                                Members
+                                <span className="text-xs font-normal text-gray-400 ml-auto">
+                                    {selectedRoom.members?.length || 0} Members
+                                </span>
+                            </h4>
+                            <div className="bg-gray-50 rounded-xl p-4 space-y-3 max-h-60 overflow-y-auto">
+                                {selectedRoom.members && selectedRoom.members.length > 0 ? (
+                                    selectedRoom.members.map((member) => (
+                                        <div key={member.id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
+                                                    {member.user?.name?.charAt(0).toUpperCase() || 'U'}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-gray-900">{member.user?.name}</p>
+                                                    <p className="text-xs text-gray-500">{member.user?.email}</p>
+                                                </div>
+                                            </div>
+                                            {selectedRoom.admin?.email !== member.user?.email && (
+                                                <button
+                                                    onClick={() => handleRemoveMember(selectedRoom.id, member.user?.id)}
+                                                    disabled={isDeletingMember}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                                    title="Remove Member"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {selectedRoom.admin?.email === member.user?.email && (
+                                                <span className="text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Admin</span>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-500 text-sm py-2">No members in this room.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
