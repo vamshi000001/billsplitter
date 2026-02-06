@@ -14,6 +14,7 @@ router.use(authMiddleware, roleGuard(['APP_ADMIN']));
 router.post('/broadcast', adminController.broadcastEmail);
 router.get('/stats', adminController.getStats);
 router.get('/rooms', adminController.getAllRooms);
+router.get('/users', adminController.getAllUsers);
 router.patch('/rooms/:roomId/ban', adminController.banRoom);
 router.delete('/rooms/:roomId', adminController.deleteRoom);
 router.delete('/rooms/:roomId/members/:userId', adminController.removeMemberFromRoom);

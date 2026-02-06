@@ -6,8 +6,10 @@ import { Check, X, Megaphone, AlertCircle, Filter, Users, Trash2, Eye } from 'lu
 const AppAdminDashboard = () => {
     const [stats, setStats] = useState({ roomCount: 0, activeRoommates: 0 });
     const [rooms, setRooms] = useState([]);
+    const [users, setUsers] = useState([]);
     const [feedbacks, setFeedbacks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeView, setActiveView] = useState('rooms'); // rooms, users
     const [filter, setFilter] = useState('ALL'); // ALL, OPEN, RESOLVED, REJECTED
 
     // Modal State
@@ -20,14 +22,16 @@ const AppAdminDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [statsRes, roomsRes, feedbackRes] = await Promise.all([
+                const [statsRes, roomsRes, feedbackRes, usersRes] = await Promise.all([
                     api.get('/admin/stats'),
                     api.get('/admin/rooms'),
-                    api.get('/feedback/admin')
+                    api.get('/feedback/admin'),
+                    api.get('/admin/users')
                 ]);
                 setStats(statsRes.data);
                 setRooms(roomsRes.data);
                 setFeedbacks(feedbackRes.data);
+                setUsers(usersRes.data);
             } catch (err) {
                 console.error("Failed to fetch admin data", err);
             } finally {
@@ -266,53 +270,126 @@ const AppAdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Rooms Table */}
-                <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                        <h2 className="text-lg font-semibold text-gray-900">Manage Rooms ({rooms.length})</h2>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {rooms.map((room) => (
-                                    <tr key={room.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm font-semibold text-gray-900">{room.title}</div>
-                                            <div className="text-xs text-gray-400">ID: {room.id}</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">
-                                            {room.admin?.name}<br />
-                                            <span className="text-xs text-gray-400">{room.admin?.email}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center text-sm font-bold">{room._count?.members || 0}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${room.isBanned ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                                                {room.isBanned ? 'Banned' : 'Active'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => openRoomModal(room)}
-                                                className="text-blue-600 hover:text-blue-900 text-sm font-medium bg-blue-50 px-3 py-1 rounded-lg"
-                                            >
-                                                Manage
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                {/* Rooms/Users Toggle */}
+                <div className="flex gap-4 mb-6 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-fit">
+                    <button
+                        onClick={() => setActiveView('rooms')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeView === 'rooms' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-500 hover:bg-gray-50'}`}
+                    >
+                        🏠 Manage Rooms
+                    </button>
+                    <button
+                        onClick={() => setActiveView('users')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeView === 'users' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-gray-500 hover:bg-gray-50'}`}
+                    >
+                        👥 All Users
+                    </button>
                 </div>
+
+                {/* Main Data Section */}
+                {activeView === 'rooms' ? (
+                    <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                            <h2 className="text-lg font-semibold text-gray-900">Manage Rooms ({rooms.length})</h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {rooms.map((room) => (
+                                        <tr key={room.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-semibold text-gray-900">{room.title}</div>
+                                                <div className="text-xs text-gray-400">ID: {room.id}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">
+                                                {room.admin?.name}<br />
+                                                <span className="text-xs text-gray-400">{room.admin?.email}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center text-sm font-bold">{room._count?.members || 0}</td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${room.isBanned ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                                    {room.isBanned ? 'Banned' : 'Active'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => openRoomModal(room)}
+                                                    className="text-blue-600 hover:text-blue-900 text-sm font-medium bg-blue-50 px-3 py-1 rounded-lg"
+                                                >
+                                                    Manage
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                            <h2 className="text-lg font-semibold text-gray-900">Registered Users ({users.length})</h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Associated Room</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Joined At</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {users.map((u) => (
+                                        <tr key={u.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">
+                                                        {u.name?.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-gray-900">{u.name}</div>
+                                                        <div className="text-xs text-gray-400">{u.email}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${u.role === 'ROOM_ADMIN' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'}`}>
+                                                    {u.role.replace('_', ' ')}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">
+                                                {u.role === 'ROOM_ADMIN' ? (
+                                                    <span className="font-medium text-blue-600">Admin of: {u.roomsCreated?.[0]?.title || 'Unknown'}</span>
+                                                ) : (
+                                                    <span>Member of: {u.memberships?.[0]?.room?.title || 'Unknown'}</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-center text-xs text-gray-400">
+                                                {new Date(u.createdAt).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {users.length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" className="px-6 py-8 text-center text-gray-500 italic">No users found in the system.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </main>
 
             {/* Room Detail Modal */}

@@ -99,93 +99,109 @@ const Settings = () => {
                     {/* Content */}
                     <div className="flex-1 p-8">
                         {message.content && (
-                            <div className={`mb-6 px-4 py-3 rounded-xl border flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                            <div className={`mb-6 px-4 py-3 rounded-xl border flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-100 transition-all duration-300 transform scale-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
                                 <span>{message.type === 'success' ? '✅' : '⚠️'}</span>
                                 <span className="font-bold text-sm">{message.content}</span>
                             </div>
                         )}
 
-                        {activeTab === 'profile' && (
-                            <div className="animate-fade-in">
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6">Edit Profile</h2>
+                        <div className="animate-fade-in space-y-12">
+                            {/* Profile Section */}
+                            <div>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+                                    <span className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-xl">👤</span>
+                                    Profile Information
+                                </h2>
                                 <form onSubmit={handleProfileUpdate} className="space-y-6 max-w-md">
+                                    <div>
+                                        <label className="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Email Address (Read-only)</label>
+                                        <div className="relative group">
+                                            <input
+                                                type="email"
+                                                value={profileForm.email}
+                                                disabled
+                                                className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 font-bold cursor-not-allowed border-dashed"
+                                            />
+                                            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none opacity-50">
+                                                <span>🔒</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div>
                                         <label className="block text-xs font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">Display Name</label>
                                         <input
                                             type="text"
                                             value={profileForm.name}
                                             onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white font-bold"
+                                            placeholder="Your Name"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white font-bold transition-all"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-900 dark:text-white uppercase tracking-wide mb-2">Email Address</label>
-                                        <input
-                                            type="email"
-                                            value={profileForm.email}
-                                            onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white font-bold"
-                                        />
-                                    </div>
-                                    <div className="pt-4">
+                                    <div className="pt-2">
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                                            className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all disabled:opacity-50 active:scale-95"
                                         >
-                                            {loading ? 'Saving...' : 'Save Changes'}
+                                            {loading ? 'Saving...' : 'Update Name'}
                                         </button>
                                     </div>
                                 </form>
                             </div>
-                        )}
 
-                        {activeTab === 'password' && (
-                            <div className="animate-fade-in">
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6">Change Password</h2>
+                            <hr className="border-gray-100 dark:border-gray-700" />
+
+                            {/* Password Section */}
+                            <div>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+                                    <span className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-xl">🔒</span>
+                                    Change Password
+                                </h2>
                                 <form onSubmit={handlePasswordChange} className="space-y-6 max-w-md">
                                     <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-wide mb-2">Current Password</label>
+                                        <label className="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Current Password</label>
                                         <input
                                             type="password"
                                             required
                                             value={passwordForm.oldPassword}
                                             onChange={e => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold transition-all"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-wide mb-2">New Password</label>
-                                        <input
-                                            type="password"
-                                            required
-                                            value={passwordForm.newPassword}
-                                            onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold"
-                                        />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">New Password</label>
+                                            <input
+                                                type="password"
+                                                required
+                                                value={passwordForm.newPassword}
+                                                onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold transition-all"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Confirm New</label>
+                                            <input
+                                                type="password"
+                                                required
+                                                value={passwordForm.confirmPassword}
+                                                onChange={e => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold transition-all"
+                                            />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-wide mb-2">Confirm New Password</label>
-                                        <input
-                                            type="password"
-                                            required
-                                            value={passwordForm.confirmPassword}
-                                            onChange={e => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white font-bold"
-                                        />
-                                    </div>
-                                    <div className="pt-4">
+                                    <div className="pt-2">
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                                            className="w-full sm:w-auto px-8 py-3 bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-bold rounded-xl shadow-lg hover:shadow-gray-500/30 hover:-translate-y-0.5 transition-all disabled:opacity-50 active:scale-95"
                                         >
                                             {loading ? 'Updating...' : 'Update Password'}
                                         </button>
                                     </div>
                                 </form>
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>

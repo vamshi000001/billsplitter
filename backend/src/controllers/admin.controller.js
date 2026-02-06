@@ -100,6 +100,30 @@ exports.getAllRooms = async (req, res) => {
     }
 };
 
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                role: { in: ['ROOM_ADMIN', 'MEMBER'] }
+            },
+            include: {
+                memberships: {
+                    include: {
+                        room: { select: { id: true, title: true } }
+                    }
+                },
+                roomsCreated: {
+                    select: { id: true, title: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching users', error: error.message });
+    }
+};
+
 exports.banRoom = async (req, res) => {
     const { roomId } = req.params;
     const { isBanned } = req.body; // Expect boolean
