@@ -1,23 +1,28 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
-import { Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
+import { Lock, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const ForgotPassword = () => {
-    const [email, setEmail] = useState('');
+const ResetPassword = () => {
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const navigate = useNavigate();
 
+    const token = new URLSearchParams(window.location.search).get('token');
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!email) return toast.error("Please enter your email");
+        if (!token) return toast.error("Invalid or missing reset token");
+        if (password.length < 8) return toast.error("Password must be at least 8 characters");
+        if (password !== confirmPassword) return toast.error("Passwords do not match");
 
         setLoading(true);
         try {
-            const response = await axios.post('/auth/forgot-password', { email });
-            toast.success(response.data.message || "Reset link sent to your email!");
+            const response = await axios.post('/auth/reset-password', { token, newPassword: password });
+            toast.success(response.data.message || "Password reset successfully!");
             setIsSubmitted(true);
         } catch (error) {
             const message = error.response?.data?.message || "Something went wrong";
@@ -30,7 +35,6 @@ const ForgotPassword = () => {
     return (
         <div className="min-h-screen bg-brand-light flex items-center justify-center p-6 font-sans">
             <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 relative overflow-hidden">
-                {/* Decorative background circle */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-blue/5 rounded-full blur-3xl"></div>
 
                 <Link to="/login" className="inline-flex items-center text-sm font-bold text-gray-400 hover:text-brand-blue transition-colors mb-8 group">
@@ -40,25 +44,40 @@ const ForgotPassword = () => {
 
                 <div className="text-center mb-8">
                     <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
-                        <Mail className="w-8 h-8 text-brand-blue" />
+                        <Lock className="w-8 h-8 text-brand-blue" />
                     </div>
-                    <h1 className="text-2xl font-black text-gray-900 mb-2">Forgot Password?</h1>
+                    <h1 className="text-2xl font-black text-gray-900 mb-2">Reset Password</h1>
                     <p className="text-sm text-gray-500 font-medium">
-                        Don't worry! Enter your registered email and we'll send you a reset link.
+                        Set a new password for your account.
                     </p>
                 </div>
 
                 {!isSubmitted ? (
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Email Address</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">New Password</label>
                             <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-blue transition-colors" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-blue transition-colors" />
                                 <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Enter your email"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Enter new password"
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-brand-blue focus:bg-white rounded-2xl outline-none font-bold transition-all text-gray-900"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Confirm Password</label>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-brand-blue transition-colors" />
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Confirm new password"
                                     className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-brand-blue focus:bg-white rounded-2xl outline-none font-bold transition-all text-gray-900"
                                     required
                                 />
@@ -74,10 +93,7 @@ const ForgotPassword = () => {
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             ) : (
-                                <>
-                                    <Send className="w-4 h-4" />
-                                    Send Reset Link
-                                </>
+                                'Reset Password'
                             )}
                         </button>
                     </form>
@@ -86,10 +102,9 @@ const ForgotPassword = () => {
                         <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
                             <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">Check Your Mail!</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Password Updated!</h2>
                         <p className="text-sm text-gray-500 font-medium mb-8">
-                            We've sent a reset link to <span className="text-brand-blue font-bold">{email}</span>.
-                            Please open it to set a new password.
+                            Your password has been reset. You can now sign in.
                         </p>
                         <button
                             onClick={() => navigate('/login')}
@@ -104,4 +119,4 @@ const ForgotPassword = () => {
     );
 };
 
-export default ForgotPassword;
+export default ResetPassword;

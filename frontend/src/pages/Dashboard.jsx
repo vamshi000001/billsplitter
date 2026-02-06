@@ -140,13 +140,15 @@ const Dashboard = () => {
 
           {/* Stats Overview */}
           <div className="flex flex-col sm:flex-row gap-4 px-2 sm:px-0">
-            <button
-              onClick={() => setShowCreateRoomModal(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-brand-blue text-white font-black rounded-[2rem] shadow-xl shadow-brand-blue/30 hover:bg-blue-700 hover:shadow-brand-blue/40 transform hover:-translate-y-1 active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Create Room
-            </button>
+            {rooms.length === 0 && (
+              <button
+                onClick={() => setShowCreateRoomModal(true)}
+                className="w-full sm:w-auto px-8 py-4 bg-brand-blue text-white font-black rounded-[2rem] shadow-xl shadow-brand-blue/30 hover:bg-blue-700 hover:shadow-brand-blue/40 transform hover:-translate-y-1 active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Create Room
+              </button>
+            )}
 
             <div className="w-full sm:w-auto bg-white dark:bg-gray-800 px-6 py-5 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 group transition-all hover:shadow-md">
               <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-brand-blue dark:text-blue-400 group-hover:scale-110 transition-transform">
@@ -278,7 +280,7 @@ const Dashboard = () => {
       </div>
 
       {/* Create Room Modal */}
-      {showCreateRoomModal && (
+      {showCreateRoomModal && rooms.length === 0 && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreateRoomModal(false)}></div>
           <div className="relative bg-white dark:bg-gray-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl animate-scale-up border border-white/20">

@@ -13,6 +13,7 @@ import AddRoommate from './pages/AddRoommate';
 import AcceptInvite from './pages/AcceptInvite';
 import Settings from './pages/Settings';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 import AIHelper from './components/AIHelper';
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/roommate-login" element={<RoommateLogin />} />
             <Route path="/register" element={<Register />} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

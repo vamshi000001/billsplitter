@@ -33,8 +33,8 @@ const AcceptInvite = () => {
             return;
         }
 
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters');
+        if (password.length < 8) {
+            setError('Password must be at least 8 characters');
             return;
         }
 
@@ -53,6 +53,7 @@ const AcceptInvite = () => {
                 // or just alert and redirect to login
                 localStorage.setItem('token', res.data.token);
                 localStorage.setItem('user', JSON.stringify(res.data.user));
+                localStorage.setItem('loginType', 'ROOMMATE');
                 // Reload to pick up auth state or just go to dashboard
                 window.location.href = '/dashboard';
             } else {

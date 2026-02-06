@@ -62,7 +62,7 @@ const AddRoommate = () => {
                         <p className="text-sm text-blue-800 dark:text-blue-300 flex gap-3">
                             <span className="text-xl">ℹ️</span>
                             <span className="leading-snug">
-                                We'll create their account with a <strong>Default Password</strong> (Room Name) and email them the details.
+                                We'll email them a secure invite link so they can set their own password.
                             </span>
                         </p>
                     </div>

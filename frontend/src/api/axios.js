@@ -28,7 +28,9 @@ api.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             const isAuthRequest = error.config.url.includes('/auth/login') ||
                 error.config.url.includes('/auth/register') ||
-                error.config.url.includes('/auth/roommate-login') ||
+                error.config.url.includes('/auth/login/room') ||
+                error.config.url.includes('/auth/forgot-password') ||
+                error.config.url.includes('/auth/reset-password') ||
                 error.config.url.includes('/admin/login');
 
             if (!isAuthRequest) {
